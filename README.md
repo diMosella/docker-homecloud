@@ -24,6 +24,10 @@ image: nextcloud:fpm
 ```
 This step is optional and, if you want to use Document Server with ownCloud, you do not need to change anything.
 
+2.1 Set the MYSQL_ROOT_PASSWORD in `docker-compose.yml`
+
+2.2 Set the MYSQL_PASSWORD in `db.env`
+
 3. Run Docker Compose:
 
 ```

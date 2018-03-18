@@ -33,6 +33,7 @@ This step is optional and, if you want to use Document Server with ownCloud, you
 ```
 docker-compose up -d
 ```
+(other commands `docker-compose up -d --force-recreate`, `docker-compose stop` and `docker-compose down -v` (`-v` to remove volumes))
 
 **Please note**: you might need to wait a couple of minutes when all the containers are up and running after the above command.
 

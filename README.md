@@ -12,21 +12,22 @@ Document Server and ownCloud/Nextcloud Docker installation will install the prec
 1. Get the latest version of this repository running the command:
 
 ```
-git clone --recursive https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud
-cd docker-onlyoffice-owncloud
+git clone --recursive https://gitlab.com/diMosella/docker-onlyoffice-owncloud.git nextCloud-onlyOffice
+cd nextCloud-onlyOffice
 git submodule update --remote
 ```
 
-2. Edit the `docker-compose.yml` file (if you want to connect Document Server to Nextcloud), opening it and altering the `image: owncloud:fpm` line:
-
-```
-image: nextcloud:fpm
-```
-This step is optional and, if you want to use Document Server with ownCloud, you do not need to change anything.
+2. Edit the config files:
 
 2.1 Set the MYSQL_ROOT_PASSWORD in `docker-compose.yml`
 
 2.2 Set the MYSQL_PASSWORD in `db.env`
+
+2.3 Set server_name in `nginx.conf`
+
+2.4 Set ssl_certificate in `nginx.conf`
+
+2.5 Set ssl_certificate_key in `nginx.conf`
 
 3. Run Docker Compose:
 
@@ -45,7 +46,7 @@ docker-compose up -d
 bash set_configuration.sh
 ```
 
-Now you can enter ownCloud/Nextcloud and create a new document. It will be opened in ONLYOFFICE Document Server.
+Now you can enter Nextcloud and create a new document. It will be opened in ONLYOFFICE Document Server.
 
 ## Project Information
 

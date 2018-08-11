@@ -16,5 +16,5 @@ docker cp ./onlyoffice cloud-server:/var/www/html/apps/
 docker exec -u www-data cloud-server php occ --no-warnings app:enable onlyoffice
 
 docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice DocumentServerUrl --value="/ds-vpath/"
-docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice DocumentServerInternalUrl --value="http://onlyoffice-document-server/"
-docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice StorageUrl --value="http://nginx-server/"
+docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice DocumentServerInternalUrl --value="https://onlyoffice-document-server/"
+docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice StorageUrl --value="https://nginx-server/"

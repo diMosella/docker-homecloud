@@ -62,7 +62,7 @@ services:
       - onlyoffice
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt/:/etc/ssl
+      - /etc/letsencrypt/:/etc/nginx/etc/ssl
       - ../ssl/dhparam.pem:/etc/ssl/dhparam.pem
       - app_root:/var/www/html
 networks:

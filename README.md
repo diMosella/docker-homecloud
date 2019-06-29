@@ -25,7 +25,7 @@ git submodule update --remote
 
 2.3 Set server_name in `nginx.conf`
 
-2.4 Set ssl_certificate in `nginx.conf`
+2.4 Set ssl_certificate in `nginx.conf` (remind to use the full chain)
 
 2.5 Set ssl_certificate_key in `nginx.conf`
 

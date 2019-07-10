@@ -1,6 +1,6 @@
-## Document Server and ownCloud/Nextcloud Docker installation
+## Document Server and Nextcloud Docker installation
 
-Document Server and ownCloud/Nextcloud Docker installation will install the preconfigured version of [ONLYOFFICE Document Server][2] connected to ownCloud/Nextcloud to your server running them in Docker containers.
+Document Server and Nextcloud Docker installation will install the preconfigured version of [ONLYOFFICE Document Server][2] connected to Nextcloud to your server running them in Docker containers.
 
 ## Requirements
 
@@ -12,7 +12,7 @@ Document Server and ownCloud/Nextcloud Docker installation will install the prec
 1. Get the latest version of this repository running the command:
 
 ```
-git clone --recursive https://gitlab.com/diMosella/docker-onlyoffice-owncloud.git nextCloud-onlyOffice
+git clone --recursive https://gitlab.com/diMosella/docker-homecloud.git nextCloud-onlyOffice
 cd nextCloud-onlyOffice
 git submodule update --remote
 ```

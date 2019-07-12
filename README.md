@@ -8,6 +8,10 @@ Forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://g
 * The latest version of Docker (can be downloaded here: [https://docs.docker.com/engine/installation/](https://docs.docker.com/engine/installation/))
 * Docker compose (can be downloaded here: [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/))
 
+## TODO
+
+* Update to latest Nextcloud and OnlyOffice dockers
+
 ## Installation
 
 1. Get the latest version of this repository running the command:

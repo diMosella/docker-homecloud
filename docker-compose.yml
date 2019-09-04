@@ -12,7 +12,7 @@ services:
       - onlyoffice
   app:
     container_name: cloud-server
-    image: nextcloud:15-fpm
+    image: nextcloud:16-fpm
     stdin_open: true
     tty: true
     restart: always

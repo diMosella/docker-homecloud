@@ -17,9 +17,8 @@ Forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://g
 1. Get the latest version of this repository running the command:
 
 ```
-git clone --recursive https://gitlab.com/diMosella/docker-homecloud.git nextCloud-onlyOffice
+git clone https://gitlab.com/diMosella/docker-homecloud.git nextCloud-onlyOffice
 cd nextCloud-onlyOffice
-git submodule update --remote
 ```
 
 2. Edit the config files:

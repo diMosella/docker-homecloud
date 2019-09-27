@@ -32,6 +32,9 @@ services:
     volumes:
       - app_root:/var/www/html
       - cloud_data:/var/www/html/data
+      - ./onlyoffice:/tmp/onlyoffice
+      - ./run.sh:/run.sh
+    command: bash /run.sh
   onlyoffice-document-server:
     container_name: document-server
     image: onlyoffice/documentserver:latest

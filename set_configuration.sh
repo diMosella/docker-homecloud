@@ -16,4 +16,4 @@ docker exec -u www-data cloud-server php occ --no-warnings app:install onlyoffic
 docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice DocumentServerUrl --value="/ds-vpath/"
 docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice DocumentServerInternalUrl --value="https://onlyoffice-document-server/"
 docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice StorageUrl --value="https://nginx-server/"
-docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice verify_peer_off --value=TRUE
+docker exec -u www-data cloud-server php occ --no-warnings config:system:set onlyoffice verify_peer_off --value="true" --type=boolean

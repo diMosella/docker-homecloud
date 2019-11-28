@@ -2,6 +2,7 @@ version: '3.3'
 services:
   database:
     container_name: database-server
+    hostname: database-server
     image: mariadb
     restart: always
     volumes:
@@ -9,10 +10,11 @@ services:
     env_file:
       - db.env
     networks:
-      - onlyoffice
+      - cloud
   app:
     container_name: cloud-server
-    image: nextcloud:16-fpm
+    hostname: cloud-server
+    image: nextcloud:16-fpm-alpine
     stdin_open: true
     tty: true
     restart: always
@@ -28,26 +30,29 @@ services:
     env_file:
       - db.env
     networks:
-      - onlyoffice
+      - cloud
     volumes:
       - app_root:/var/www/html
       - cloud_data:/var/www/html/data
-  onlyoffice-document-server:
-    container_name: document-server
-    image: onlyoffice/documentserver:latest
+  bitwarden:
+    container_name: secure-server
+    hostname: secure-server
+    image: bitwardenrs/server:alpine
     stdin_open: true
     tty: true
     restart: always
-    networks:
-      - onlyoffice
     expose:
       - '443'
+#    environment:
+#      - WEBSOCKET_ENABLED=true
+#      - SIGNUPS_ALLOWED=true
+    networks:
+      - cloud
     volumes:
-      - document_data:/var/www/onlyoffice/Data
-      - document_log:/var/log/onlyoffice
+      - secure_data:/data/
   nginx:
     container_name: nginx-server
-    image: nginx
+    image: nginx:alpine
     stdin_open: true
     tty: true
     restart: always
@@ -57,22 +62,17 @@ services:
     links:
       - app
     networks:
-      - onlyoffice
+      - cloud
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - /etc/letsencrypt/:/etc/nginx/etc/ssl
       - ../ssl/dhparam.pem:/etc/ssl/dhparam.pem
+      - ../ssl/.htpasswd:/etc/ssl/.htpasswd
       - app_root:/var/www/html
 networks:
-  onlyoffice:
+  cloud:
     driver: 'bridge'
 volumes:
-  document_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /media/clouddata/onlyoffice
   database_data:
     driver: local
     driver_opts:
@@ -85,5 +85,10 @@ volumes:
       type: none
       o: bind
       device: /media/clouddata/nextcloud
-  document_log:
+  secure_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/clouddata/bitwarden
   app_root:

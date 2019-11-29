@@ -14,7 +14,7 @@ services:
   app:
     container_name: cloud-server
     hostname: cloud-server
-    image: nextcloud:16-fpm-alpine
+    image: nextcloud:16-fpm
     stdin_open: true
     tty: true
     restart: always
@@ -46,13 +46,15 @@ services:
 #    environment:
 #      - WEBSOCKET_ENABLED=true
 #      - SIGNUPS_ALLOWED=true
+    env_file:
+      - bw.env
     networks:
       - cloud
     volumes:
       - secure_data:/data/
   nginx:
     container_name: nginx-server
-    image: nginx:alpine
+    image: nginx
     stdin_open: true
     tty: true
     restart: always

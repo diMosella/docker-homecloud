@@ -14,7 +14,7 @@ services:
   app:
     container_name: cloud-server
     hostname: cloud-server
-    image: nextcloud:16-fpm
+    image: nextcloud:18-fpm
     stdin_open: true
     tty: true
     restart: always
@@ -43,9 +43,6 @@ services:
     restart: always
     expose:
       - '443'
-#    environment:
-#      - WEBSOCKET_ENABLED=true
-#      - SIGNUPS_ALLOWED=true
     env_file:
       - bw.env
     networks:

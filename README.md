@@ -2,6 +2,7 @@
 
 Nextcloud and Bitwarden Docker installation will install Nextcloud and Bitwarden_rs to your server running them in Docker containers.
 Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then OnlyOffice launched a new repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud](https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud)
+Now, the instructions (like adding fonts) are from [https://github.com/nextcloud/documentserver_community]Nextcloud app.
 
 ## Requirements
 

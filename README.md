@@ -11,7 +11,7 @@ Now, the instructions (like adding fonts) are from [Nextcloud DocumentServer app
 
 ## TODO
 
-[x] Update to latest Nextcloud and OnlyOffice dockers
+- [x] Update to latest Nextcloud and OnlyOffice dockers
 
 ## Installation
 

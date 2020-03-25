@@ -1,7 +1,7 @@
-## Document Server and Nextcloud Docker installation
+## Nextcloud and BitWarden Docker installation
 
-Document Server and Nextcloud Docker installation will install the preconfigured version of [ONLYOFFICE Document Server][2] connected to Nextcloud to your server running them in Docker containers.
-Forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then OnlyOffice launched a new repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud](https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud)
+Nextcloud and Bitwarden Docker installation will install Nextcloud and Bitwarden_rs to your server running them in Docker containers.
+Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then OnlyOffice launched a new repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud](https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud)
 
 ## Requirements
 
@@ -10,28 +10,30 @@ Forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://g
 
 ## TODO
 
-* Update to latest Nextcloud and OnlyOffice dockers
+[x] Update to latest Nextcloud and OnlyOffice dockers
 
 ## Installation
 
 1. Get the latest version of this repository running the command:
 
 ```
-git clone https://gitlab.com/diMosella/docker-homecloud.git nextCloud-onlyOffice
-cd nextCloud-onlyOffice
+git clone https://gitlab.com/diMosella/docker-homecloud.git
+cd docker-homecloud
 ```
 
 2. Edit the config files:
 
-2.1 Set the MYSQL_ROOT_PASSWORD in `docker-compose.yml`
+2.1 Set the `MYSQL_ROOT_PASSWORD` in `db.env`
 
-2.2 Set the MYSQL_PASSWORD in `db.env`
+2.2 Set the `MYSQL_PASSWORD` in `db.env`
 
-2.3 Set server_name in `nginx.conf`
+2.3 Set `server_name`s in `nginx.conf`
 
-2.4 Set ssl_certificate in `nginx.conf` (remind to use the full chain)
+2.4 Set `ssl_certificate`s in `nginx.conf` (remind to use the full chain)
 
-2.5 Set ssl_certificate_key in `nginx.conf`
+2.5 Set `ssl_certificate_key`s in `nginx.conf`
+
+2.6 Set `ADMIN_TOKEN` in `bw.env`
 
 3. Run Docker Compose:
 
@@ -42,13 +44,7 @@ docker-compose up -d
 
 **Please note**: you might need to wait a couple of minutes when all the containers are up and running after the above command.
 
-4. Now launch the browser and enter the webserver address. The ownCloud/Nextcloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
-
-5. Go to the project folder and run the `set_configuration.sh` script:
-
-```
-bash set_configuration.sh
-```
+4. Now launch the browser and enter the webserver address. The NextCloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
 
 Now you can enter Nextcloud and create a new document. It will be opened in ONLYOFFICE Document Server.
 

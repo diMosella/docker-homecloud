@@ -3,6 +3,7 @@
 Nextcloud and Bitwarden Docker installation will install Nextcloud and Bitwarden_rs to your server running them in Docker containers.
 Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then OnlyOffice launched a new repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud](https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud)
 Now, the instructions (like adding fonts) are from [Nextcloud DocumentServer app](https://github.com/nextcloud/documentserver_community).
+For instruction on Restic (for backup) see [Restic documentation](https://restic.readthedocs.io/en/latest/index.html)
 
 ## Requirements
 
@@ -35,6 +36,12 @@ cd docker-homecloud
 2.5 Set `ssl_certificate_key`s in `nginx.conf`
 
 2.6 Set `ADMIN_TOKEN` in `bw.env`
+
+2.7 Set `TOKEN` in `bu.env`
+
+3. Build the backup container
+
+3.1 Run ``build.sh`` from ``backup``
 
 3. Run Docker Compose:
 

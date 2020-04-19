@@ -34,6 +34,7 @@ services:
     volumes:
       - app_root:/var/www/html
       - cloud_data:/var/www/html/data
+      - ./fonts:/usr/share/fonts/truetype
   bitwarden:
     container_name: secure-server
     hostname: secure-server
@@ -49,6 +50,23 @@ services:
       - cloud
     volumes:
       - secure_data:/data/
+  backup:
+    container_name: backup-services
+    hostname: backup-services
+    image: dimosella/backup:latest
+    restart: always
+    env_file:
+      - db.env
+      - bu.env
+    networks:
+      - cloud
+    volumes:
+      - app_root:/backup/source-root
+      - cloud_data:/backup/source-cloud
+      - secure_data:/backup/source-secure
+      - backup_data:/backup/target
+      - ./crontab:/var/spool/cron/crontabs/root
+      - ../../.ssh:/root/.ssh:ro
   nginx:
     container_name: nginx-server
     image: nginx
@@ -90,4 +108,16 @@ volumes:
       type: none
       o: bind
       device: /media/clouddata/bitwarden
+  backup_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/clouddata/backup
+#  docker_socket:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      o: bind
+#      device: /var/run/docker.sock
   app_root:

@@ -1,4 +1,4 @@
-FROM restic:latest
+FROM restic/restic:latest
 
 # install sqlite, mysql-client, bash (for script)
 RUN apk add --update --no-cache \

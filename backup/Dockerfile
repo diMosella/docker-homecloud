@@ -8,12 +8,12 @@ RUN apk add --update --no-cache \
     sed
 
 # create a landing place for the scripts
-RUN mkdir /scripts
+# RUN mkdir /scripts
 
 # copy backup script to landing place
-COPY backup.sh /scripts/
+# COPY scripts/backup.sh /scripts/
 
 # give execution permission to scripts
-RUN chmod +x /scripts/backup.sh
+# RUN chmod +x /scripts/backup.sh
 
 ENTRYPOINT ["crond", "-f"]

@@ -65,6 +65,7 @@ services:
       - cloud_data:/backup/source-cloud
       - secure_data:/backup/source-secure
       - backup_data:/backup/target
+      - ./backup/scripts:/scripts
       - ./crontab:/var/spool/cron/crontabs/root
       - ../../.ssh:/root/.ssh:ro
   nginx:

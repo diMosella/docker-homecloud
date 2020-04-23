@@ -18,4 +18,4 @@ CMD chown root:root /etc/crontabs/root && /usr/sbin/crond -f
 # give execution permission to scripts
 # RUN chmod +x /scripts/backup.sh
 
-# ENTRYPOINT ["crond", "-f"]
+ENTRYPOINT ["/bin/bash"]

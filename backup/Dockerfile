@@ -7,7 +7,7 @@ RUN apk add --update --no-cache \
     bash \
     sed
 
-CMD chown root:root /etc/crontabs/root
+CMD chown root:root /etc/crontabs/root && /usr/sbin/crond -f
 
 # create a landing place for the scripts
 # RUN mkdir /scripts
@@ -18,4 +18,4 @@ CMD chown root:root /etc/crontabs/root
 # give execution permission to scripts
 # RUN chmod +x /scripts/backup.sh
 
-ENTRYPOINT ["crond", "-f"]
+# ENTRYPOINT ["crond", "-f"]

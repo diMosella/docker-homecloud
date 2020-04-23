@@ -7,8 +7,7 @@ RUN apk add --update --no-cache \
     bash \
     sed
 
-RUN crontab /var/spool/cron/crontabs/root
-RUN touch /var/log/cron.log
+CMD chown root:root /etc/crontabs/root
 
 # create a landing place for the scripts
 # RUN mkdir /scripts

@@ -1,21 +1,18 @@
 FROM restic/restic:latest
 
-# install sqlite, mysql-client, bash (for script)
+# install sqlite, mysql-client, sed, set timezone
+# each RUN creates a seperate layer
 RUN apk add --update --no-cache \
     sqlite \
     mysql-client \
-    bash \
-    sed
+    tzdata \
+    sed &&\
+    cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime &&\ 
+    echo "Europe/Amsterdam" > /etc/timezone &&\ 
+    apk del tzdata &&\
+    rm -rf /var/cache/apk/*
 
 CMD chown root:root /etc/crontabs/root && /usr/sbin/crond -f
 
-# create a landing place for the scripts
-# RUN mkdir /scripts
-
-# copy backup script to landing place
-# COPY scripts/backup.sh /scripts/
-
-# give execution permission to scripts
-# RUN chmod +x /scripts/backup.sh
-
-ENTRYPOINT ["/bin/bash"]
+# command that wrappes incoming commands, clearing restic default
+ENTRYPOINT []

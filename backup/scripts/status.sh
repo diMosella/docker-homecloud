@@ -3,6 +3,8 @@
 # script to report the status of cloud and secure data backup
 
 # 0. definitions
+TIMESTAMP=$(date +"%Y%m%dT%H:%M")
+
 export RESTIC_REPOSITORY="$REPO"
 export RESTIC_PASSWORD="$TOKEN"
 

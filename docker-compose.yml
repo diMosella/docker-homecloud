@@ -67,7 +67,7 @@ services:
       - backup_data:/backup/target
       - ./backup/scripts:/scripts
       - ./backup/crontab:/etc/crontabs/root
-      - ../../.ssh:/root/.ssh
+      - ../../.ssh:/root/.ssh:ro
   nginx:
     container_name: nginx-server
     image: nginx

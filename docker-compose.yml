@@ -115,10 +115,4 @@ volumes:
       type: none
       o: bind
       device: /media/clouddata/backup
-#  docker_socket:
-#    driver: local
-#    driver_opts:
-#      type: none
-#      o: bind
-#      device: /var/run/docker.sock
   app_root:

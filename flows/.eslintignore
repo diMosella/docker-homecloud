@@ -1,0 +1,7 @@
+blueprints/**/files/**
+coverage/**
+lint/**
+node_modules/**
+dist/**
+src/index.html
+src/static/**

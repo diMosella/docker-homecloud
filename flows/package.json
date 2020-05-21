@@ -1,0 +1,17 @@
+{
+  "name": "flows",
+  "version": "1.0.0",
+  "description": "Some flows for NextCloud to automatically improve files or metadata",
+  "main": "src/app.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "diMosella",
+  "license": "MIT",
+  "dependencies": {
+    "koa": "^2.12.0",
+    "koa-static": "^5.0.0",
+    "nextcloud-link": "^1.2.2"
+  }
+}

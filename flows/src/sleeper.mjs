@@ -13,5 +13,10 @@ export const TIME_UNIT = enumerate(
  * @param {Number} waitTime the number of time units to sleep
  * @param {String} timeUnit the unit of time, as a string
  */
-export default (waitTime, timeUnit = TIME_UNIT.MINUTE) =>
-  new Promise(resolve => setTimeout(resolve, waitTime * TIME_UNIT.properties[timeUnit].relativeValue * 1000));
+export default (waitTime, timeUnit = TIME_UNIT.MINUTE) => {
+  let timer = null;
+  return {
+    sleep: new Promise(resolve => timer = setTimeout(resolve, waitTime * TIME_UNIT.properties[timeUnit].relativeValue * 1000)),
+    interrupt: () => clearTimeout(timer)
+  }
+};

@@ -1,38 +1,48 @@
 import { cpus } from 'os';
 import cluster from 'cluster';
 import path from 'path';
-import sleep, { TIME_UNIT } from './sleep.mjs';
-import { notify, ACTION, STATE } from './trigger.mjs';
+import { notify, ACTION } from './trigger.mjs';
 import { read } from './exif.mjs';
+import Queue from './queue.mjs';
+import sleeper, { TIME_UNIT } from './sleeper.mjs';
 
 import serve from 'koa-static';
 import Router from '@koa/router';
 import Koa from 'koa';
 
-const __dirname = path.resolve();
-const queue = [];
-
-const generatefromQueue = function* () {
-  yield queue[0];
-};
-
-const generator = generatefromQueue();
-
-const messageHandler = (id) => async (msg) => {
-  console.log(`${new Date().toISOString()}: Worker ${id} delivered a message ('${ACTION.properties[msg.action].label}')`);
-  queue.push(msg.payload);
-  const prevQueueSize = queue.length;
-  await sleep(30, TIME_UNIT.SECOND);
-  if (queue.length === prevQueueSize) {
-    console.log(`${new Date().toISOString()}: start processing queue`);
-    for (const id in cluster.workers) {
-      cluster.workers[id].send({ action: ACTION.START });
-    }
-  }
-};
-
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
+
+  const notifyer = (msg) => {
+    switch (msg.action) {
+      case ACTION.START:
+        for (const id in cluster.workers) {
+          cluster.workers[id].send({ action: ACTION.START, payload: queue.next() });
+        };
+        break;
+      default: break;
+    }
+  };
+
+  const queue = new Queue(notifyer);
+
+  const messageHandler = (id) => async (msg) => {
+    console.log(`${new Date().toISOString()}: Worker ${id} delivered a message ('${ACTION.properties[msg.action].label}')`);
+    switch (msg.action) {
+      case ACTION.ADD:
+        queue.push(msg.payload);
+        break;
+      case ACTION.LOCK:
+        queue.lock(msg.payload.qid);
+        break;
+      case ACTION.FINISH:
+        cluster.workers[msg.payload.wid].send({ action: ACTION.START, payload: queue.next() });
+        break;
+      default:
+        break;
+    }
+  };
+
   const numWorkers = cpus().length;
 
   console.log(`${new Date().toISOString()}: Master cluster setting up ${numWorkers} workers...`);
@@ -56,13 +66,29 @@ if(cluster.isMaster) {
   });
 
 } else if (cluster.isWorker) {
+  const processItem = async (item) => {
+    await sleeper(10, TIME_UNIT.SECOND).sleep;
+    process.send({ action: ACTION.FINISH, payload: { qid: item.qid, wid: cluster.worker.id } });
+  };
+
   process.on('message', (msg) => {
     console.log(`${new Date().toISOString()}: Worker ${process.pid} received message ('${ACTION.properties[msg.action].label}')`);
-    queue.find(item => item.state === STATE.QUEUED)
+    switch (msg.action) {
+      case ACTION.START:
+        const { value, done } = msg.payload;
+        if (value) {
+          console.log(`${new Date().toISOString()}: Worker ${process.pid} locking qid: ${value.qid}`);
+          process.send({ action: ACTION.LOCK, payload: { qid: value.qid } });
+          processItem(value);
+        }
+        break;
+      default: break;
+    }
   });
   const app = new Koa();
   const triggerRouter = new Router();
   const port = 8000;
+  const __dirname = path.resolve();
   const docroot = path.join(__dirname, '../');
 
   triggerRouter.get('/trigger', notify);

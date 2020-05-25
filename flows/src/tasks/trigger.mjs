@@ -1,5 +1,5 @@
 'use strict';
-import { enumerate, EnumProperties } from './enum.mjs';
+import { enumerate, EnumProperties } from '../basics/enum.mjs';
 
 const VALID_REGEXP = /[a-zA-Z0-9À-ž\/\-_\.]+/;
 

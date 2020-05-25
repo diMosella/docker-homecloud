@@ -1,6 +1,7 @@
 'use strict';
-import { ACTION, STATE } from './trigger.mjs';
-import sleeper, { TIME_UNIT } from './sleeper.mjs';
+
+import { ACTION, STATE } from '../tasks/trigger.mjs';
+import sleeper, { TIME_UNIT } from '../basics/sleeper.mjs';
 
 const TIMEOUT = 10;
 
@@ -14,7 +15,7 @@ export default class Queue {
   #_notify;
 
   /**
-   * Create a singleton of the Queue
+   * Create a Queue
    * @param { function } notify The method to notify actions
    */
   constructor (notify) {

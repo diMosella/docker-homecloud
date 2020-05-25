@@ -1,19 +1,16 @@
+'use strict';
+
 import { cpus } from 'os';
 import cluster from 'cluster';
-import path from 'path';
-import { notify, ACTION } from './trigger.mjs';
-import { read } from './exif.mjs';
-import Queue from './queue.mjs';
-import sleeper, { TIME_UNIT } from './sleeper.mjs';
-
-import serve from 'koa-static';
-import Router from '@koa/router';
-import Koa from 'koa';
+import httpWorker from './services/worker.mjs';
+import { ACTION } from './tasks/trigger.mjs';
+import Queue from './services/queue.mjs';
+import sleeper, { TIME_UNIT } from './basics/sleeper.mjs';
 
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
 
-  const notifyer = (msg) => {
+  const notify = (msg) => {
     switch (msg.action) {
       case ACTION.START:
         for (const id in cluster.workers) {
@@ -24,7 +21,7 @@ if(cluster.isMaster) {
     }
   };
 
-  const queue = new Queue(notifyer);
+  const queue = new Queue(notify);
 
   const messageHandler = (id) => async (msg) => {
     console.log(`${new Date().toISOString()}: Worker ${id} delivered a message ('${ACTION.properties[msg.action].label}')`);
@@ -43,11 +40,11 @@ if(cluster.isMaster) {
     }
   };
 
-  const numWorkers = cpus().length;
+  const numberOfWorkers = cpus().length;
 
-  console.log(`${new Date().toISOString()}: Master cluster setting up ${numWorkers} workers...`);
+  console.log(`${new Date().toISOString()}: Master cluster setting up ${numberOfWorkers} workers...`);
 
-  for(var i = 0; i < numWorkers; i++) {
+  for(var i = 0; i < numberOfWorkers; i++) {
       cluster.fork();
   }
 
@@ -85,40 +82,5 @@ if(cluster.isMaster) {
       default: break;
     }
   });
-  const app = new Koa();
-  const triggerRouter = new Router();
-  const port = 8000;
-  const __dirname = path.resolve();
-  const docroot = path.join(__dirname, '../');
-
-  triggerRouter.get('/trigger', notify);
-  triggerRouter.use(read);
-
-  app.context.flow = {
-    fileInfo: null
-  };
-
-  // logger
-  app.use(async (ctx, next) => {
-    await next();
-    const rt = ctx.response.get('X-Response-Time');
-    console.log(`${new Date().toISOString()}: ${ctx.method} ${ctx.url} - ${rt}`);
-    console.log(`${new Date().toISOString()}: from worker ${cluster.worker.process.pid}`);
-  });
-
-  // x-response-time
-  app.use(async (ctx, next) => {
-    const start = Date.now();
-    await next();
-    const ms = Date.now() - start;
-    ctx.set('X-Response-Time', `${ms}ms`);
-  });
-
-  // response
-  app.use(triggerRouter.routes());
-  app.use(serve(docroot));
-
-  app.listen(port, () => {
-    console.log(`${new Date().toISOString()}: Flows listening on port ${port}.`);
-  });
+  httpWorker(process.pid);
 }

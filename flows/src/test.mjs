@@ -1,7 +1,7 @@
-import sleeper, { TIME_UNIT } from './sleeper.mjs';
-import { ACTION } from './trigger.mjs';
+import sleeper, { TIME_UNIT } from './basics/sleeper.mjs';
+import { ACTION } from './tasks/trigger.mjs';
 import cluster from 'cluster';
-import Queue from './queue.mjs';
+import Queue from './services/queue.mjs';
 
 let sleep, interrupt;
 

@@ -2,12 +2,9 @@
 
 const freeze = obj => Object.freeze(obj);
 
-/**
- * Contains a value, a label and a code
- * @param {string} value Test
- */
 export class EnumProperties {
   // TODO: how to make the fields customizable
+  // TODO: how to make typed enums
   /**
    * Creates a frozen EnumProperties instance
    * @param { string } value

@@ -3,9 +3,9 @@
 import { cpus } from 'os';
 import cluster from 'cluster';
 import httpWorker from './services/worker.mjs';
-import { ACTION, TIME_UNIT } from './basics/constants.mjs';
+import { ACTION } from './basics/constants.mjs';
 import Queue from './services/queue.mjs';
-import sleeper from './basics/sleeper.mjs';
+import { read } from './tasks/cloud.mjs';
 
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
@@ -14,7 +14,10 @@ if(cluster.isMaster) {
     switch (msg.action) {
       case ACTION.START:
         for (const id in cluster.workers) {
-          cluster.workers[id].send({ action: ACTION.START, payload: queue.next() });
+          const { value, done } = queue.next();
+          if (!done && value) {
+            cluster.workers[id].send({ action: ACTION.START, payload: { value, done } });
+          }
         };
         break;
       default: break;
@@ -64,7 +67,7 @@ if(cluster.isMaster) {
 
 } else if (cluster.isWorker) {
   const processItem = async (item) => {
-    await sleeper(10, TIME_UNIT.SECOND).sleep;
+    await read(item, () => {});
     process.send({ action: ACTION.FINISH, payload: { qid: item.qid, wid: cluster.worker.id } });
   };
 
@@ -73,7 +76,7 @@ if(cluster.isMaster) {
     switch (msg.action) {
       case ACTION.START:
         const { value, done } = msg.payload;
-        if (value) {
+        if (!done && value) {
           console.log(`${new Date().toISOString()}: Worker ${process.pid} locking qid: ${value.qid}`);
           process.send({ action: ACTION.LOCK, payload: { qid: value.qid } });
           processItem(value);

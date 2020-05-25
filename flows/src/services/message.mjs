@@ -1,5 +1,7 @@
 'use strict';
 
+const freeze = obj => Object.freeze(obj);
+
 export default class Message {
   #_action;
   #_payload;
@@ -12,6 +14,7 @@ export default class Message {
   constructor (action, payload) {
     this.#_action = action;
     this.#_payload = payload;
+    return freeze(this);
   }
 
   get action () {

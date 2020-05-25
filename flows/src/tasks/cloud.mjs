@@ -1,24 +1,27 @@
 'use strict';
 
+import fs from 'fs';
+import path from 'path';
 import NextcloudClient from 'nextcloud-link';
+import { cloud } from '../basics/credentials.mjs';
 
 // Supply a configuration object to NextcloudClient to
 // set-up the connection
-const client = NextcloudClient({
-    url: 'http://localhost:16000',
-    username: 'example',
-    password: 'example'
-});
+const client = new NextcloudClient(cloud);
 
-    // Managing files folders is just as easy
-    await this.client.touchFolder('/example');
-
-    // Add a file with content.
-    // The content argument can be either a string or a Buffer.
-    await this.client.put('/example/file.txt', 'Hello!');
-    await this.client.move('/example', '/otherlocation');
-
-    // And we can get the content back from the new location
-    const content = await this.client.getReadStream('/otherlocation/file.txt');
-    // Or simply as a string
-    const text = await this.client.get('/otherlocation/file.txt');
+export const read = async (payload, next) => {
+  await client.checkConnectivity();
+  // await client.touchFolder('/example');
+  // await client.put('/example/file.txt', 'Hello!');
+  // await client.move('/example', '/otherlocation');
+  // const content = await client.getReadStream(payload.path);
+  // const text = await client.get('/otherlocation/file.txt');
+  /* const file = await client.downloadToStream(payload.path, fs.createWriteStream(path.resolve('/home/wim/temp/test'))).catch((err) => {
+    console.log(err);
+  }); */
+  const file = await client.getFiles('/vanMoosel Fotos').catch((err) => {
+    console.log(err);
+  });
+  console.log('dir', file);
+  await next();
+}

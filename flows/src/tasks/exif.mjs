@@ -1,3 +1,5 @@
+'use strict';
+
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 

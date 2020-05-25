@@ -3,6 +3,7 @@
 import path from 'path';
 import Koa from 'koa';
 import Router from '@koa/router';
+import json from 'koa-json';
 import serve from 'koa-static';
 import { notify } from '../tasks/trigger.mjs';
 import { read } from '../tasks/exif.mjs';
@@ -15,6 +16,7 @@ export default (pid) => {
   const docroot = path.join(__dirname, '../');
 
   triggerRouter.get('/trigger', notify);
+  triggerRouter.use(json());
   triggerRouter.use(read);
 
   app.context.flow = {

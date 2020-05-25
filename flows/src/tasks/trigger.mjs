@@ -12,5 +12,6 @@ export const notify = async (ctx, next) => {
   if (isValid) {
     process.send({ action: ACTION.ADD, payload: Object.assign({}, ctx.request.query, { timestamp: Date.now(), state: STATE.VALIDATED }) });
   }
+  ctx.body = { success: isValid };
   await next();
 };

@@ -1,7 +1,7 @@
 'use strict';
 
-import { ACTION, STATE } from '../tasks/trigger.mjs';
-import sleeper, { TIME_UNIT } from '../basics/sleeper.mjs';
+import { ACTION, STATE, TIME_UNIT } from '../basics/constants.mjs';
+import sleeper from '../basics/sleeper.mjs';
 
 const TIMEOUT = 10;
 

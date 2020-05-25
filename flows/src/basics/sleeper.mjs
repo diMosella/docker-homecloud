@@ -1,11 +1,6 @@
 'use strict';
-import { enumerate, EnumProperties } from './enum.mjs';
 
-export const TIME_UNIT = enumerate(
-    new EnumProperties('hour', 'hours', 'hh', 3600),
-    new EnumProperties('minute', 'minutes', 'mm', 60),
-    new EnumProperties('second', 'seconds', 'ss', 1)
-);
+import { TIME_UNIT } from './constants.mjs';
 
 /**
  * Sleep for an indicated number time units,

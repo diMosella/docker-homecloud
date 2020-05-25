@@ -3,9 +3,9 @@
 import { cpus } from 'os';
 import cluster from 'cluster';
 import httpWorker from './services/worker.mjs';
-import { ACTION } from './tasks/trigger.mjs';
+import { ACTION, TIME_UNIT } from './basics/constants.mjs';
 import Queue from './services/queue.mjs';
-import sleeper, { TIME_UNIT } from './basics/sleeper.mjs';
+import sleeper from './basics/sleeper.mjs';
 
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);

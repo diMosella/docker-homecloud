@@ -1,16 +1,8 @@
 'use strict';
-import { enumerate, EnumProperties } from '../basics/enum.mjs';
+
+import { ACTION, STATE } from '../basics/constants.mjs';
 
 const VALID_REGEXP = /[a-zA-Z0-9À-ž\/\-_\.]+/;
-
-export const STATE = enumerate('validated', 'queued', 'locked', 'processed');
-export const ACTION = enumerate (
-  new EnumProperties('add', 'add item to queue'),
-  new EnumProperties('wait', 'wait to start queue'),
-  new EnumProperties('start', 'start processing queue'),
-  new EnumProperties('lock', 'lock queue item'),
-  new EnumProperties('finish', 'finish processing queue item')
-);
 
 export const notify = async (ctx, next) => {
   const { actor, owner, path } = ctx.request.query;

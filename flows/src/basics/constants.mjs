@@ -4,6 +4,7 @@ import { EnumProperties, enumerate } from './enum.mjs';
 
 export const STATE = enumerate('validated', 'queued', 'locked', 'processed');
 export const ACTION = enumerate (
+  new EnumProperties('ping', 'ping to check alive'),
   new EnumProperties('add', 'add item to queue'),
   new EnumProperties('wait', 'wait to start queue'),
   new EnumProperties('start', 'start processing queue'),

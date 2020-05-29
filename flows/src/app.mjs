@@ -2,13 +2,53 @@
 
 import { cpus } from 'os';
 import cluster from 'cluster';
+import cron from 'node-cron';
+import { ACTION, STATE } from './basics/constants.mjs';
+import { watch as watchConfig } from './basics/config.mjs';
 import httpWorker from './services/worker.mjs';
-import { ACTION } from './basics/constants.mjs';
 import Queue from './services/queue.mjs';
-import { read } from './tasks/cloud.mjs';
+import Flow from './services/flow.mjs';
+import { read, getFolderDetails, downloadFile } from './tasks/cloud.mjs';
+import { checkForChanges } from './tasks/checks.mjs';
 
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
+
+  watchConfig.forEach ((item) => {
+    let lastWatch = 0;
+    const getLastWatch = () => lastWatch;
+    cron.schedule(item.frequency, async () => {
+      let count = 0;
+      const watched = Date.now();
+      item.paths.forEach(async (path) => {
+        const context = {
+          flow: {
+            folder: {
+              name: path
+            }
+          }
+        };
+        const flow = new Flow();
+        await flow
+          .add(getFolderDetails)
+          .add(checkForChanges(getLastWatch))
+          .go(context);
+        if (++count === item.paths.length) {
+          lastWatch = Date.now();
+        }
+        context.flow.folder.changes.forEach((fileName) => {
+          queue.push({
+            path: `${context.flow.folder.name}/${fileName}`,
+            timestamp: watched,
+            state: STATE.VALIDATED
+          });
+        });
+      });
+    }, {
+      scheduled: true,
+      timezone: 'Europe/Amsterdam'
+    });
+  });
 
   const notify = (msg) => {
     switch (msg.action) {
@@ -36,7 +76,13 @@ if(cluster.isMaster) {
         queue.lock(msg.payload.qid);
         break;
       case ACTION.FINISH:
-        cluster.workers[msg.payload.wid].send({ action: ACTION.START, payload: queue.next() });
+        const { value, done } = queue.next();
+        if (!done && value) {
+          cluster.workers[msg.payload.wid].send({ action: ACTION.START, payload: { value, done } });
+        }
+        break;
+      case ACTION.PING:
+        cluster.workers[msg.payload.wid].send({ action: ACTION.PING, payload: { healthTimestamp: Date.now() } });
         break;
       default:
         break;
@@ -66,8 +112,14 @@ if(cluster.isMaster) {
   });
 
 } else if (cluster.isWorker) {
+  let healthTimestamp = Date.now();
+  const getPingTimestamp = () => healthTimestamp;
   const processItem = async (item) => {
-    await read(item, () => {});
+    // await read(item, () => {});
+    const flow = new Flow();
+    await flow
+        .add(downloadFile)
+        .go(item);
     process.send({ action: ACTION.FINISH, payload: { qid: item.qid, wid: cluster.worker.id } });
   };
 
@@ -82,8 +134,12 @@ if(cluster.isMaster) {
           processItem(value);
         }
         break;
-      default: break;
+      case ACTION.PING:
+        healthTimestamp = msg.payload.healthTimestamp;
+        break;
+      default:
+        break;
     }
   });
-  httpWorker(process.pid);
+  httpWorker(process.pid, cluster.worker.id, getPingTimestamp);
 }

@@ -53,6 +53,10 @@ export default class Queue {
   }
 
   push = async (itemPayload) => {
+    if (!itemPayload) {
+      return;
+    }
+    console.log('push', itemPayload);
     this.#_queue.push(Object.assign({}, itemPayload, { qid: this.#_idGenerator.next().value, state: STATE.QUEUED }));
     const queueSize = this.#_queue.length;
     this.#_interruptAll();

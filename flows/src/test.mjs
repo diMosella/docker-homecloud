@@ -1,5 +1,5 @@
-import sleeper, { TIME_UNIT } from './basics/sleeper.mjs';
-import { ACTION } from './tasks/trigger.mjs';
+import sleeper from './basics/sleeper.mjs';
+import { ACTION, TIME_UNIT } from './basics/constants.mjs';
 import cluster from 'cluster';
 import Queue from './services/queue.mjs';
 

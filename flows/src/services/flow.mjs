@@ -63,8 +63,8 @@ export default class Flow {
   }
 
   async go (context) {
-    const errorHandler = (error) => console.error(error);
-    const outcomeHandler = (outcome) => console.log(outcome);
+    const errorHandler = (error) => console.error('error', error);
+    const outcomeHandler = (outcome) => { if (outcome) console.log('outcome', outcome); };
     const outcome = await this.#_join()(context).catch(errorHandler);
     return outcomeHandler(outcome);
   }

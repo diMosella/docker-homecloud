@@ -8,8 +8,9 @@ import { watch as watchConfig } from './basics/config.mjs';
 import httpWorker from './services/worker.mjs';
 import Queue from './services/queue.mjs';
 import Flow from './services/flow.mjs';
-import { read, getFolderDetails, downloadFile } from './tasks/cloud.mjs';
-import { checkForChanges } from './tasks/checks.mjs';
+import { getFolderDetails, downloadFile } from './tasks/cloud.mjs';
+import { checkForChanges, deriveInfo } from './tasks/utils.mjs';
+import { extractExif } from './tasks/exif.mjs';
 
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
@@ -36,11 +37,17 @@ if(cluster.isMaster) {
         if (++count === item.paths.length) {
           lastWatch = Date.now();
         }
-        context.flow.folder.changes.forEach((fileName) => {
+        context.flow.folder.changes.forEach((fileDetails) => {
           queue.push({
-            path: `${context.flow.folder.name}/${fileName}`,
-            timestamp: watched,
-            state: STATE.VALIDATED
+            flow: {
+              file: {
+                path: `${context.flow.folder.name}/${fileDetails.name}`,
+                folder: context.flow.folder.name,
+                details: fileDetails,
+                timestamp: watched,
+                state: STATE.VALIDATED
+              }
+            }
           });
         });
       });
@@ -114,13 +121,14 @@ if(cluster.isMaster) {
 } else if (cluster.isWorker) {
   let healthTimestamp = Date.now();
   const getPingTimestamp = () => healthTimestamp;
-  const processItem = async (item) => {
-    // await read(item, () => {});
+  const processFile = async (context) => {
     const flow = new Flow();
     await flow
         .add(downloadFile)
-        .go(item);
-    process.send({ action: ACTION.FINISH, payload: { qid: item.qid, wid: cluster.worker.id } });
+        .add(extractExif)
+        .add(deriveInfo)
+        .go(context);
+    process.send({ action: ACTION.FINISH, payload: { qid: context.qid, wid: cluster.worker.id } });
   };
 
   process.on('message', (msg) => {
@@ -131,7 +139,7 @@ if(cluster.isMaster) {
         if (!done && value) {
           console.log(`${new Date().toISOString()}: Worker ${process.pid} locking qid: ${value.qid}`);
           process.send({ action: ACTION.LOCK, payload: { qid: value.qid } });
-          processItem(value);
+          processFile(value);
         }
         break;
       case ACTION.PING:

@@ -64,12 +64,14 @@ export const downloadFile = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.path === 'undefined') {
+  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.path !== 'string') {
     throw new TypeError('A download context path must be of type string!');
   }
   await client.checkConnectivity();
-  await client.downloadToStream(context.path, fs.createWriteStream(path.resolve(`${tempFolder}/${path.basename(context.path)}`))).catch((err) => {
+  const tempPath = path.resolve(`${tempFolder}/${path.basename(context.flow.file.path)}`);
+  await client.downloadToStream(context.flow.file.path, fs.createWriteStream(tempPath)).catch((err) => {
     console.log(err);
   });
+  context.flow.file.tempPath = tempPath;
   return await next();
 }

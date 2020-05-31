@@ -4,7 +4,6 @@ import fs from 'fs';
 import path from 'path';
 import NextcloudClient from 'nextcloud-link';
 import { cloud as CloudCredentials } from '../basics/credentials.mjs';
-import { read as readExif } from '../tasks/exif.mjs';
 import { tempFolder } from '../basics/config.mjs';
 
 const client = new NextcloudClient(CloudCredentials);

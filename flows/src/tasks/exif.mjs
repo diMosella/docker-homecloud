@@ -44,6 +44,5 @@ export const extractExif = async (context, next) => {
     return error;
   });
   context.flow.file.exif = isError ? null : JSON.parse(stdout)[0];
-  console.log(context.flow.file.exif, context.flow.file.details);
   return await next();
 };

@@ -1,6 +1,16 @@
 'use strict';
 
 const freeze = obj => Object.freeze(obj);
+const formatValue = value => value.replace(/(\s|-)/, '_').toUpperCase();
+const findBy = (obj) => (field, value) => {
+  if (typeof value === 'undefined' || value === null) {
+    return;
+  }
+  const candidate = Object.entries(obj).find((item) => value.toUpperCase() === item[1][field].toUpperCase());
+  if (candidate) {
+    return Number.parseInt(candidate[0]);
+  }
+}
 
 export class EnumProperties {
   // TODO: how to make the fields customizable
@@ -14,7 +24,7 @@ export class EnumProperties {
    */
   constructor(value, label, code, relativeValue) {
     this.value = typeof value === 'string'
-      ? value.toUpperCase()
+      ? formatValue(value)
       : null;
     this.label = typeof label === 'string' || typeof label === 'number'
       ? label
@@ -41,7 +51,7 @@ export const enumerate = (...members) => {
     let value = null;
     let props = null;
     if(typeof member === 'string') {
-      value = member.toUpperCase();
+      value = member;
       props = new EnumProperties(value);
     }
     if (member instanceof EnumProperties) {
@@ -49,10 +59,11 @@ export const enumerate = (...members) => {
       props = member;
     }
     if (typeof value === 'string' && props instanceof EnumProperties) {
-      enumeration[value] = size;
+      enumeration[formatValue(value)] = size;
       properties[size] = freeze(props);
     }
   }
   enumeration.properties = freeze(properties);
+  enumeration.findBy = findBy(enumeration.properties);
   return freeze(enumeration);
 };

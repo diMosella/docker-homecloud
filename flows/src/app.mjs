@@ -9,7 +9,7 @@ import httpWorker from './services/worker.mjs';
 import Queue from './services/queue.mjs';
 import Flow from './services/flow.mjs';
 import { getFolderDetails, downloadFile } from './tasks/cloud.mjs';
-import { checkForChanges, deriveInfo } from './tasks/utils.mjs';
+import { checkForChanges, deriveInfo, convert } from './tasks/utils.mjs';
 import { extractExif } from './tasks/exif.mjs';
 
 if(cluster.isMaster) {
@@ -122,12 +122,12 @@ if(cluster.isMaster) {
   let healthTimestamp = Date.now();
   const getPingTimestamp = () => healthTimestamp;
   const processFile = async (context) => {
-    const flow = new Flow();
-    await flow
-        .add(downloadFile)
-        .add(extractExif)
-        .add(deriveInfo)
-        .go(context);
+    await new Flow()
+      .add(downloadFile)
+      .add(extractExif)
+      .add(deriveInfo)
+      .add(convert)
+      .go(context);
     process.send({ action: ACTION.FINISH, payload: { qid: context.qid, wid: cluster.worker.id } });
   };
 

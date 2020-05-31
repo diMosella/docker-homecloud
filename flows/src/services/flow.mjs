@@ -47,6 +47,7 @@ export default class Flow {
   };
 
   constructor () {
+    return this;
   }
 
   /**

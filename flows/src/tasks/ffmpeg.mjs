@@ -17,13 +17,13 @@ export const convert = async (context) => {
 
   const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
 
-  let isError = false;
-  const { stdout, stderr } = await asyncExec('convert',
-      ['-auto-gamma', '-auto-level', '-normalize', path.resolve(tempPathOrg), tempPathEdit]
-  ).catch(error => {
-    console.log('error:', error);
-    isError = true;
-    return error;
-  });
-  context.flow.file.tempPathEdit = tempPathEdit;
+  // let isError = false;
+  // const { stdout, stderr } = await asyncExec('convert',
+  //     ['-auto-gamma', '-auto-level', '-normalize', path.resolve(tempPathOrg), tempPathEdit]
+  // ).catch(error => {
+  //   console.log('error:', error);
+  //   isError = true;
+  //   return error;
+  // });
+  // context.flow.file.tempPathEdit = tempPathEdit;
 };

@@ -2,26 +2,29 @@
 
 import path from 'path';
 import { convert as imageConvert } from './imagemagick.mjs';
+import { convert as rawConvert } from './rawtherapee.mjs';
 import { convert as movieConvert } from './ffmpeg.mjs';
 import { convert as documentConvert } from './tesseract.mjs';
 import { basePaths } from '../basics/config.mjs';
 import { SOURCE, CAMERA, MONTH } from '../basics/constants.mjs';
 
-const cleanExifDate = (exifDate) => exifDate ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, `$1-$2-$3T`) : null;
+const cleanExifDate = (exifDate) => exifDate
+  ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, `$1-$2-$3T`).replace(/\s+DST\s*$/i, '')
+  : null;
 const simpleFormatDate = (date) => date.toISOString().replace(/(-|:|\.\d{3}Z)/g, '');
 const noConvert = async (context, next) => {
   await next();
 };
 const conversionMap = {
-  jpg: { converter: imageConvert, editExtension: 'png' },
-  jpeg: { converter: imageConvert, editExtension: 'png' },
-  png: { converter: imageConvert },
-  arw: { converter: imageConvert, editExtension: 'png' },
-  mp4: { converter: movieConvert, editExtension: 'webm' },
-  mov: { converter: movieConvert, editExtension: 'webm' },
-  mts: { converter: movieConvert, editExtension: 'webm' },
-  pdf: { converter: documentConvert },
-  aae: { converter: noConvert }
+  jpg: { converters: [ imageConvert ], editExtension: 'jpg' },
+  jpeg: { converters: [ imageConvert ], editExtension: 'jpg' },
+  png: { converters: [ imageConvert ] },
+  arw: { converters: [ rawConvert, imageConvert ], editExtension: 'jpg' },
+  mp4: { converters: [ movieConvert ], editExtension: 'mp4' },
+  mov: { converters: [ movieConvert ], editExtension: 'mp4' },
+  mts: { converters: [ movieConvert ], editExtension: 'mp4' },
+  pdf: { converters: [ documentConvert ] },
+  aae: { converters: [ noConvert ] }
 };
 
 const sonyReg = /^(DSC)?\d{5}\.(MTS|ARW)$/i;
@@ -136,6 +139,10 @@ export const convert = async (context, next) => {
   const { exif } = context.flow.file;
   const { FileTypeExtension } = exif;
 
-  await conversionMap[FileTypeExtension].converter(context, next);
+  const converters = conversionMap[FileTypeExtension].converters;
+  let index = 0;
+  while (index < converters.length) {
+    await converters[index++](context, next);
+  }
   await next();
 };

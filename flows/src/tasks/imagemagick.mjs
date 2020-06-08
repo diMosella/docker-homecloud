@@ -12,18 +12,33 @@ export const convert = async (context) => {
     throw new TypeError('A context temp path must be of type string!');
   }
 
-  const { tempPathOrg, derived } = context.flow.file;
+  const { tempPathOrg, tempPathIntermediate, derived } = context.flow.file;
   const { nameEdit } = derived;
 
   const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
+  const original = tempPathIntermediate || tempPathOrg;
 
   let isError = false;
-  const { stdout, stderr } = await asyncExec('convert',
-      ['-auto-gamma', '-auto-level', '-normalize', path.resolve(tempPathOrg), tempPathEdit]
+  await asyncExec('convert',
+      [path.resolve(original), '-auto-gamma', '-auto-level', '-normalize', '-auto-orient', tempPathEdit]
   ).catch(error => {
     console.log('error:', error);
     isError = true;
     return error;
   });
+
+  if (tempPathIntermediate) {
+    fs.unlink(path.resolve(tempPathIntermediate), (err) => {
+      if (err) throw err;
+    });
+  }
+
+  if (isError) {
+    return;
+  }
+
   context.flow.file.tempPathEdit = tempPathEdit;
 };
+
+// Set -define dng:use-camera-wb=true to use the RAW-embedded color profile for Sony cameras. You can also set these options: use-auto-wb, use-auto-bright, and output-color
+// magick /home/wim/temp/DSC09670.ARW -define "dng:use-camera-wb=true dng:use-auto-bright=true" -auto-gamma -auto-level -normalize /home/wim/temp/jpg/DSC09670-im.jpg

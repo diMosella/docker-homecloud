@@ -15,6 +15,7 @@
     "koa-json": "^2.0.2",
     "koa-static": "^5.0.0",
     "nextcloud-link": "^1.2.2",
-    "node-cron": "^2.0.3"
+    "node-cron": "^2.0.3",
+    "tesseract.js": "^2.1.1"
   }
 }

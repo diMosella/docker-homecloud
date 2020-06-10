@@ -2,6 +2,7 @@
 
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import fs from 'fs';
 import path from 'path';
 import { tempFolder } from '../basics/config.mjs';
 
@@ -17,35 +18,73 @@ export const convert = async (context) => {
 
   const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
 
-  // let isError = false;
-  // const { stdout, stderr } = await asyncExec('convert',
-  //     ['-auto-gamma', '-auto-level', '-normalize', path.resolve(tempPathOrg), tempPathEdit]
-  // ).catch(error => {
-  //   console.log('error:', error);
-  //   isError = true;
-  //   return error;
-  // });
-  // context.flow.file.tempPathEdit = tempPathEdit;
+  const options = [ '--rotate-pages', '--deskew', '-l', 'nld+eng', '--clean' ];
+
+  let isError = false;
+  await asyncExec('ocrmypdf',
+      [ ...options, path.resolve(tempPathOrg), tempPathEdit ]
+  ).catch(error => {
+    console.log('error:', error);
+    isError = true;
+    return error;
+  });
+
+  if (isError) {
+    return;
+  }
+  context.flow.file.tempPathEdit = tempPathEdit;
 };
 
-// const path = require('path');
-// const fs = require('fs');
-// const { createWorker } = require('../../');
+// let isInitialized = false;
 
-// const [,, imagePath] = process.argv;
-// const image = path.resolve(__dirname, (imagePath || '../../tests/assets/images/cosmic.png'));
+// let worker;
 
-// console.log(`Recognizing ${image}`);
-
-// (async () => {
-//   const worker = createWorker();
+// const init = async () => {
+//   if (!worker) {
+//     worker = createWorker({
+//       langPath: tempFolder,
+//       gzip: false,
+//       logger: m => console.log(m)
+//     });
+//   }
 //   await worker.load();
-//   await worker.loadLanguage('eng');
-//   await worker.initialize('eng');
-//   const { data: { text } } = await worker.recognize(image);
+//   await worker.loadLanguage('nld+eng');
+//   await worker.initialize('nld+eng');
+//   isInitialized = true;
+// };
+
+// export const convert = async (context) => {
+//   if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathIntermediate !== 'string') {
+//     throw new TypeError('A context temp path must be of type string!');
+//   }
+
+//   const { tempPathIntermediate, derived } = context.flow.file;
+//   const { nameEdit } = derived;
+
+//   const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
+
+//   if (!worker || !isInitialized) {
+//     await init();
+//   }
+
+//   const { data: { text } } = await worker.recognize(path.resolve(tempPathIntermediate));
 //   console.log(text);
-//   const { data } = await worker.getPDF('Tesseract OCR Result');
-//   fs.writeFileSync('tesseract-ocr-result.pdf', Buffer.from(data));
-//   console.log('Generate PDF: tesseract-ocr-result.pdf');
-//   await worker.terminate();
-// })();
+//   const { data } = await worker.getPDF('Tesseract OCR');
+
+//   let isError = false;
+//   await asyncWrite(tempPathEdit, Buffer.from(data)).catch((error) => {
+//     console.log('error', error);
+//     isError = true;
+//   });
+
+//   if (tempPathIntermediate) {
+//     fs.unlink(path.resolve(tempPathIntermediate), (err) => {
+//       if (err) throw err;
+//     });
+//   }
+
+//   if (isError) {
+//     return;
+//   }
+
+//   console.log(`Generated PDF: ${tempPathEdit}`);

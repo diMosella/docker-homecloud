@@ -3,12 +3,13 @@
 import { cpus } from 'os';
 import cluster from 'cluster';
 import cron from 'node-cron';
+import { resolve, basename } from 'path';
 import { ACTION, STATE } from './basics/constants.mjs';
-import { watch as watchConfig } from './basics/config.mjs';
+import { watch as watchConfig, tempFolder } from './basics/config.mjs';
 import httpWorker from './services/worker.mjs';
 import Queue from './services/queue.mjs';
 import Flow from './services/flow.mjs';
-import { getFolderDetails, downloadFile } from './tasks/cloud.mjs';
+import { getFolderDetails, checkForExistence, downloadFile } from './tasks/cloud.mjs';
 import { checkForChanges, deriveInfo, convert } from './tasks/utils.mjs';
 import { extractExif } from './tasks/exif.mjs';
 
@@ -38,14 +39,16 @@ if(cluster.isMaster) {
           lastWatch = Date.now();
         }
         context.flow.folder.changes.forEach((fileDetails) => {
+          const filePath = resolve(`${context.flow.folder.name}/${fileDetails.name}`);
           queue.push({
             flow: {
               file: {
-                path: `${context.flow.folder.name}/${fileDetails.name}`,
+                path: filePath,
                 folder: context.flow.folder.name,
                 details: fileDetails,
                 timestamp: watched,
-                state: STATE.VALIDATED
+                state: STATE.VALIDATED,
+                tempPathOrg: resolve(`${tempFolder}/${basename(filePath)}`)
               }
             }
           });
@@ -123,9 +126,11 @@ if(cluster.isMaster) {
   const getPingTimestamp = () => healthTimestamp;
   const processFile = async (context) => {
     await new Flow()
+      .add(checkForExistence)
       .add(downloadFile)
       .add(extractExif)
       .add(deriveInfo)
+      .add(checkForExistence)
       .add(convert)
       .go(context);
     process.send({ action: ACTION.FINISH, payload: { qid: context.qid, wid: cluster.worker.id } });

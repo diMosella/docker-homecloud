@@ -2,6 +2,14 @@
 
 import { EnumProperties, enumerate } from './enum.mjs';
 
+const USERS = {
+  A: 'Abigail',
+  W: 'Wim',
+  D: 'diMosella'
+};
+
+export const FILE_CATEGORY = enumerate('media', 'docs');
+
 export const STATE = enumerate('validated', 'queued', 'locked', 'processed');
 export const ACTION = enumerate (
   new EnumProperties('ping', 'ping to check alive'),
@@ -26,10 +34,13 @@ export const CAMERA = enumerate(
 );
 
 export const SOURCE = enumerate(
-  new EnumProperties('abigail', 'Abigail', '/Uploads/Abigail iPhoneSE'),
-  new EnumProperties('wim', 'Wim', '/Uploads/Wim iPhoneSE'),
+  new EnumProperties(USERS.A, USERS.A, `/Uploads/${USERS.A} iPhoneSE`),
+  new EnumProperties(USERS.W, USERS.W, `/Uploads/${USERS.W} iPhoneSE`),
+  new EnumProperties(USERS.D, USERS.D, `/Uploads/${USERS.D}`),
   new EnumProperties('sony', 'Sony', '/Uploads/Sony'),
-  new EnumProperties('scan', 'Scan', '/Scans'),
+  new EnumProperties(`${USERS.A}-scan`, USERS.A, `/Scans/${USERS.A}`),
+  new EnumProperties(`${USERS.W}-scan`, USERS.W, `/Scans/${USERS.W}`),
+  new EnumProperties(`${USERS.D}-scan`, USERS.D, `/Scans/${USERS.D}`),
   new EnumProperties('ext', 'Extern')
 );
 

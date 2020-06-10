@@ -18,6 +18,7 @@ export default class Flow {
 
     /**
      * @param {Object} context
+     * @param {function} next
      * @return {Promise}
      */
     return (context, next) => {

@@ -6,7 +6,7 @@ import { convert as rawConvert } from './rawtherapee.mjs';
 import { convert as movieConvert } from './ffmpeg.mjs';
 import { convert as documentConvert } from './tesseract.mjs';
 import { basePaths } from '../basics/config.mjs';
-import { SOURCE, CAMERA, MONTH } from '../basics/constants.mjs';
+import { SOURCE, CAMERA, MONTH, FILE_CATEGORY } from '../basics/constants.mjs';
 
 const cleanExifDate = (exifDate) => exifDate
   ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, `$1-$2-$3T`).replace(/\s+DST\s*$/i, '')
@@ -28,7 +28,7 @@ const conversionMap = {
 };
 
 const sonyReg = /^(DSC)?\d{5}\.(MTS|ARW)$/i;
-const scanReg = /^SCAN(\d{4})?\.PDF$/i;
+const scanReg = /^SCAN\-[a-z]{1}(\d{4})?\.PDF$/i;
 const iPhoneReg = /^IMG_\d{4}\.(JPG|MOV|AAE)$/i;
 const extReg = /\.(JPG|JPEG|PNG|AAE|ARW|MP4|MOV|MTS|PDF)$/i;
 
@@ -87,13 +87,16 @@ export const deriveInfo = async (context, next) => {
   const folder = SOURCE.findBy('code', context.flow.file.folder);
 
   const tags = [];
+  let category = FILE_CATEGORY.MEDIA;
   let source = SOURCE.properties[SOURCE.EXT].label;
   if (camera === CAMERA.NEX_5T && make === SOURCE.SONY && folder === SOURCE.SONY && sonyReg.test(name)) {
     tags.push(SOURCE.properties[make].label);
     source = SOURCE.properties[make].label;
-  } else if (folder === SOURCE.SCAN && scanReg.test(name)) {
+  } else if ((folder === SOURCE.ABIGAIL_SCAN || folder === SOURCE.WIM_SCAN || folder === SOURCE.DIMOSELLA_SCAN) && scanReg.test(name)) {
     tags.push(SOURCE.properties[folder].label);
-    source = SOURCE.properties[folder].label;
+    tags.push('Scan');
+    category = FILE_CATEGORY.DOCS;
+    source = `${SOURCE.properties[folder].label}-Scan`;
   } else if (camera === CAMERA.IPHONE_SE && (folder === SOURCE.ABIGAIL || folder === SOURCE.WIM) && iPhoneReg.test(name)) {
     tags.push(SOURCE.properties[folder].label);
     tags.push(CAMERA.properties[camera].label.replace(/\s/, ''));
@@ -102,7 +105,7 @@ export const deriveInfo = async (context, next) => {
     tags.push(SOURCE.properties[SOURCE.EXT].label);
   }
 
-  console.log('source:', `${name} -> ${source}`);
+  console.log('Derived :: source:', `${name} -> ${source}`);
 
   const year = dates[0].getFullYear();
   const month = (dates[0].getMonth() + 1).toString().padStart(2, '0');
@@ -118,10 +121,10 @@ export const deriveInfo = async (context, next) => {
   const datePath = `${year}/${year}-${month}/${year}-${month}-${date}`;
   context.flow.file.derived = {
     nameOrg: `${simpleFormatDate(dates[0])}-${source}-org.${exif.FileTypeExtension}`,
-    pathOrg: `${basePaths.org}/${datePath}`,
+    pathOrg: `${basePaths[FILE_CATEGORY.properties[category].value].org}/${datePath}`,
     tagsOrg,
     nameEdit: `${simpleFormatDate(dates[0])}-${source}-edit.${editExtension}`,
-    pathEdit: `${basePaths.edit}/${datePath}`,
+    pathEdit: `${basePaths[FILE_CATEGORY.properties[category].value].edit}/${datePath}`,
     tagsEdit,
     editExtension
   };

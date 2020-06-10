@@ -2,6 +2,7 @@
 
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import fs from 'fs';
 import path from 'path';
 import { tempFolder } from '../basics/config.mjs';
 
@@ -13,14 +14,19 @@ export const convert = async (context) => {
   }
 
   const { tempPathOrg, tempPathIntermediate, derived } = context.flow.file;
-  const { nameEdit } = derived;
+  const { nameEdit, editExtension } = derived;
 
-  const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
+  const isPDF = editExtension === 'pdf';
+
+  const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}${isPDF ? '.tif' : ''}`);
   const original = tempPathIntermediate || tempPathOrg;
+  const options = isPDF
+    ? [ '-density', '200', '-resize', '2490x3510' ]
+    : ['-auto-gamma', '-auto-level', '-normalize', '-auto-orient'];
 
   let isError = false;
   await asyncExec('convert',
-      [path.resolve(original), '-auto-gamma', '-auto-level', '-normalize', '-auto-orient', tempPathEdit]
+      [path.resolve(original), ...options, tempPathEdit]
   ).catch(error => {
     console.log('error:', error);
     isError = true;
@@ -37,7 +43,7 @@ export const convert = async (context) => {
     return;
   }
 
-  context.flow.file.tempPathEdit = tempPathEdit;
+  context.flow.file[isPDF ? 'tempPathIntermediate' : 'tempPathEdit'] = tempPathEdit;
 };
 
 // Set -define dng:use-camera-wb=true to use the RAW-embedded color profile for Sony cameras. You can also set these options: use-auto-wb, use-auto-bright, and output-color

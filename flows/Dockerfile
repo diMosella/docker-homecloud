@@ -10,6 +10,7 @@ RUN apk add --update --no-cache \
     libvpx \
     libvorbis \
     ffmpeg \
+    ocrmypdf \
     tzdata \
     sed &&\
     cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime &&\

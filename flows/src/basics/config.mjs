@@ -14,8 +14,8 @@ export const tempFolder = '/home/wim/temp';
 
 export const basePaths = {
   [FILE_CATEGORY.properties[FILE_CATEGORY.MEDIA].value]: {
-    org: '/vanMoosel Fotos/_originelen',
-    edit: '/vanMoosel Fotos'
+    org: '/vanMoosel Fotos/_originelenT',
+    edit: '/vanMoosel Fotos/_edits'
   },
   [FILE_CATEGORY.properties[FILE_CATEGORY.DOCS].value]: {
     org: '/vanMoosel Scans/_originelen',

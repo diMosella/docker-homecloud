@@ -6,12 +6,10 @@ import Router from '@koa/router';
 import json from 'koa-json';
 import serve from 'koa-static';
 import { notify } from '../tasks/trigger.mjs';
-import sleeper from '../basics/sleeper.mjs';
-import { TIME_UNIT,ACTION } from '../basics/constants.mjs';
+import messenger from '../basics/messenger.mjs';
+import { ACTION } from '../basics/constants.mjs';
 
-// import { read } from '../tasks/exif.mjs';
-
-export default (pid, wid, getPingTimestamp) => {
+export default (pid, wid) => {
   const app = new Koa();
   const triggerRouter = new Router();
   const healthRouter = new Router();
@@ -27,9 +25,12 @@ export default (pid, wid, getPingTimestamp) => {
 
   healthRouter.get('/status', async (ctx, next) => {
     const startTimestamp = Date.now();
-    process.send({ action: ACTION.PING, payload: { wid } });
-    await sleeper(0.1, TIME_UNIT.SECOND).sleep;
-    ctx.body = { success: getPingTimestamp() - startTimestamp > 0 };
+    const message = await messenger({ action: ACTION.PING, payload: { wid } }).catch((err) => console.log('no-msg', err));
+    if (message && message.action === ACTION.PING) {
+      ctx.body = { success: message.payload.healthTimestamp - startTimestamp > 0 };
+    } else {
+      ctx.body = { success: false };
+    }
   });
   healthRouter.use(json());
 

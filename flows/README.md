@@ -16,7 +16,8 @@
 
 - OCR, tesseract.js
 - ``sudo sed -i '/PDF/s/none/read|write/' /etc/ImageMagick-6/policy.xml``
-- /usr/share/tesseract-ocr/4.00/tessdata/
+- ``/usr/share/tesseract-ocr/4.00/tessdata/ < assets``
+- https://tesseract-ocr.github.io/tessdoc/Data-Files.html
 
 - curl -G "localhost:8000/trigger/?actor=wim&owner=moosel" --data-urlencode "path=moosel/files/vanMoosel Fotos/_originelen/2020/202005/20200512_org - Sony/DSC09550.ARW"
 

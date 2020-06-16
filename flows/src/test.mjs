@@ -19,7 +19,7 @@ const test1 = async () => {
 }
 
 const test2 = async () => {
-  await sleeper(10, TIME_UNIT.SECOND).sleep;
+  await sleeper(10, TIME_UNIT.SECOND).sleep.catch((err) => console.log('err', err));
   console.log('Interrupt', Date.now());
   interrupt();
 }

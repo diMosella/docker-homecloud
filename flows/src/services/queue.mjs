@@ -62,7 +62,14 @@ export default class Queue {
 
     const { sleep, interrupt } = sleeper(TIMEOUT, TIME_UNIT.SECOND);
     this.#_interrupts.push(interrupt);
-    await sleep;
+    let isError = false;
+    await sleep.catch((err) => {
+      console.log('err', err);
+      isError = true;
+    });
+    if (isError) {
+      return;
+    }
 
     if (this.#_queue.length === queueSize) {
       this.#_generator = this.#_generatorFunction();

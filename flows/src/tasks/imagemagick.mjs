@@ -22,7 +22,7 @@ export const convert = async (context) => {
   const original = tempPathIntermediate || tempPathOrg;
   const options = isPDF
     ? [ '-density', '200', '-resize', '2490x3510' ]
-    : ['-auto-gamma', '-auto-level', '-normalize', '-auto-orient'];
+    : ['-auto-gamma', '-auto-level', '-normalize'];
 
   let isError = false;
   await asyncExec('convert',

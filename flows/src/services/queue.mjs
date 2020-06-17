@@ -56,7 +56,7 @@ export default class Queue {
     if (!itemPayload) {
       return;
     }
-    this.#_queue.push(Object.assign({}, itemPayload, { qid: this.#_idGenerator.next().value, state: STATE.QUEUED }));
+    this.#_queue.push(Object.assign({}, itemPayload, { queueId: this.#_idGenerator.next().value, state: STATE.QUEUED }));
     const queueSize = this.#_queue.length;
     this.#_interruptAll();
 
@@ -78,7 +78,7 @@ export default class Queue {
   };
 
   lock = (id) => {
-    const itemId = this.#_queue.findIndex((item) => item.qid === id);
+    const itemId = this.#_queue.findIndex((item) => item.queueId === id);
     if (itemId !== -1) {
       this.#_queue[itemId].state = STATE.LOCKED;
     }

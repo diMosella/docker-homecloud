@@ -17,9 +17,6 @@ export const ACTION = enumerate (
   new EnumProperties('wait', 'wait to start queue'),
   new EnumProperties('start', 'start processing queue'),
   new EnumProperties('lock', 'lock queue item'),
-  new EnumProperties('can_ensure', 'can proceed to ensure path exists'),
-  new EnumProperties('ensure', 'start ensuring that path does exist'),
-  new EnumProperties('finish_ensure', 'ensured that path does exist'),
   new EnumProperties('finish', 'finish processing queue item')
 );
 

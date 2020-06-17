@@ -9,7 +9,7 @@ import { notify } from '../tasks/trigger.mjs';
 import messenger from '../basics/messenger.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
-export default (pid, wid) => {
+export default (processId, workerId) => {
   const app = new Koa();
   const triggerRouter = new Router();
   const healthRouter = new Router();
@@ -23,9 +23,9 @@ export default (pid, wid) => {
   triggerRouter.use(json());
   // triggerRouter.use(read);
 
-  healthRouter.get('/status', async (ctx, next) => {
+  healthRouter.get('/status', async (ctx, _next) => {
     const startTimestamp = Date.now();
-    const message = await messenger({ action: ACTION.PING, payload: { wid } }).catch((err) => console.log('no-msg', err));
+    const message = await messenger({ action: ACTION.PING, payload: { workerId } }).catch((err) => console.log('no-msg', err));
     if (message && message.action === ACTION.PING) {
       ctx.body = { success: message.payload.healthTimestamp - startTimestamp > 0 };
     } else {
@@ -42,7 +42,7 @@ export default (pid, wid) => {
   app.use(async (ctx, next) => {
     await next();
     const rt = ctx.response.get('X-Response-Time');
-    console.log(`${new Date().toISOString()}: ${ctx.method} ${ctx.url} - ${rt}, by worker ${pid}`);
+    console.log(`${new Date().toISOString()}: ${ctx.method} ${ctx.url} - ${rt}, by worker ${processId}`);
   });
 
   // x-response-time

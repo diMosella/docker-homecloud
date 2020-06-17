@@ -48,15 +48,19 @@ export const checkForChanges = (getLastWatch) => async (context, next) => {
     context.flow.folder.changes = [];
   }
 
-  context.flow.folder.details.forEach((detail) => {
+  if (lastWatch > context.flow.folder.lastModified) {
+    console.log('lW', lastWatch, context.flow.folder.lastModified);
+    return;
+  }
+
+  for (const detail of context.flow.folder.details) {
     if (detail.isDirectory) {
       return;
     }
-    const modified = new Date(detail.lastModified).valueOf();
-    if (modified > lastWatch && extReg.test(path.extname(detail.name))) {
+    if (extReg.test(path.extname(detail.name))) {
       context.flow.folder.changes.push(detail);
     }
-  });
+  }
   return await next();
 };
 

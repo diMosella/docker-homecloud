@@ -8,6 +8,7 @@ import { ACTION, STATE } from './basics/constants.mjs';
 import { watch as watchConfig, tempFolder } from './basics/config.mjs';
 import httpWorker from './services/worker.mjs';
 import Queue from './services/queue.mjs';
+import CloudCache from './services/cache.mjs';
 import Flow from './services/flow.mjs';
 import { getFolderDetails, checkForExistence, downloadFile, moveOriginal, uploadEdit, addTags } from './tasks/cloud.mjs';
 import { checkForChanges, deriveInfo, convert } from './tasks/utils.mjs';
@@ -16,13 +17,15 @@ import { extractExif } from './tasks/exif.mjs';
 if(cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
 
-  watchConfig.forEach ((item) => {
+  let cloudCache = new CloudCache();
+
+  for (const item of watchConfig) {
     let lastWatch = 0;
     const getLastWatch = () => lastWatch;
     cron.schedule(item.frequency, async () => {
       let count = 0;
       const watched = Date.now();
-      item.paths.forEach(async (path) => {
+      for (const path of item.paths) {
         const context = {
           flow: {
             folder: {
@@ -37,7 +40,7 @@ if(cluster.isMaster) {
         if (++count === item.paths.length) {
           lastWatch = Date.now();
         }
-        context.flow.folder.changes.forEach((fileDetails) => {
+        for (const fileDetails of context.flow.folder.changes) {
           const filePath = resolve(`${context.flow.folder.name}/${fileDetails.name}`);
           queue.push({
             flow: {
@@ -51,13 +54,13 @@ if(cluster.isMaster) {
               }
             }
           });
-        });
-      });
+        }
+      }
     }, {
       scheduled: true,
       timezone: 'Europe/Amsterdam'
     });
-  });
+  }
 
   const notify = (msg) => {
     switch (msg.action) {
@@ -65,6 +68,7 @@ if(cluster.isMaster) {
         for (const id in cluster.workers) {
           const { value, done } = queue.next();
           if (!done && value) {
+            value.flow.workerId = id;
             cluster.workers[id].send({ action: ACTION.START, payload: { value, done } });
           }
         };
@@ -73,74 +77,30 @@ if(cluster.isMaster) {
     }
   };
 
-  const queue = new Queue(notify);
-  const ensuredPaths = [];
-  const ensureInProgressPaths = [];
+  let queue = new Queue(notify);
 
-  const messageHandler = (id) => async (msg) => {
-    console.log(`${new Date().toISOString()}: Worker ${id} delivered a message ('${ACTION.properties[msg.action].label}')`);
-    switch (msg.action) {
+  const messageHandler = (pid) => async (message) => {
+    console.log(`${new Date().toISOString()}: Worker ${pid} delivered a message ('${ACTION.properties[message.action].label}')`);
+    switch (message.action) {
       case ACTION.ADD:
-        queue.push(msg.payload);
+        queue.push(message.payload);
         break;
       case ACTION.LOCK:
-        queue.lock(msg.payload.qid);
+        queue.lock(message.payload.queueId);
         break;
       case ACTION.FINISH:
         const { value, done } = queue.next();
         if (!done && value) {
-          cluster.workers[msg.payload.wid].send({ action: ACTION.START, payload: { value, done } });
-        } // TODO: clear queue, queue states, queue item class, ensur(ed|ing)Paths
+          value.flow.workerId = message.payload.workerId;
+          cluster.workers[message.payload.workerId].send({ action: ACTION.START, payload: { value, done } });
+        } else {
+          queue = new Queue(notify);
+          cloudCache = new CloudCache();
+        }
+        // TODO: cleanup states, use queue item class
         break;
       case ACTION.PING:
-        cluster.workers[msg.payload.wid].send({ action: ACTION.PING, payload: { healthTimestamp: Date.now() } });
-        break;
-      case ACTION.CAN_ENSURE:
-        console.log('can', msg.payload.path);
-        const inProgress = ensureInProgressPaths.includes(msg.payload.path);
-        const isEnsured = ensuredPaths.includes(msg.payload.path);
-        const canEnsure = !inProgress && !isEnsured;
-        const ensuredCommonPath = ensuredPaths
-            .filter((path) => msg.payload.path.startsWith(path))
-            .sort((pathA, pathB) => pathA.length - pathB.length)
-            .pop() || '';
-
-        const toEnsure = msg.payload.path.substring(ensuredCommonPath.length + 1).split('/');
-        if (canEnsure && msg.payload.willEnsure) {
-          let accummulatedPath = ensuredCommonPath;
-          toEnsure.forEach((folderName) => {
-            accummulatedPath = resolve(`${accummulatedPath}/${folderName}`);
-            if (!ensureInProgressPaths.includes(accummulatedPath)) {
-              ensureInProgressPaths.push(accummulatedPath);
-            }
-          });
-        }
-
-        cluster.workers[msg.payload.wid].send({
-          action: ACTION.ENSURE,
-          payload: {
-            path: msg.payload.path,
-            canEnsure,
-            isEnsured,
-            toEnsure
-          }
-        });
-        break;
-      case ACTION.FINISH_ENSURE:
-        console.log('finish', msg.payload.path);
-        const pathParts = msg.payload.path.split('/');
-        let accummulatedPath = '';
-        pathParts.forEach((folderName) => {
-          accummulatedPath = resolve(`${accummulatedPath}/${folderName}`);
-          const index = ensureInProgressPaths.indexOf(accummulatedPath);
-          if (index !== -1) {
-            ensureInProgressPaths.splice(index, 1);
-          }
-          if (!ensuredPaths.includes(accummulatedPath)) {
-            ensuredPaths.push(accummulatedPath);
-          }
-        });
-        console.log('ensuredPaths', ensuredPaths);
+        cluster.workers[message.payload.workerId].send({ action: ACTION.PING, payload: { healthTimestamp: Date.now() } });
         break;
       default:
         break;
@@ -180,9 +140,9 @@ if(cluster.isMaster) {
       .add(convert)
       .add(moveOriginal)
       .add(uploadEdit)
-      .add(addTags)
+      // .add(addTags)
       .go(context);
-    process.send({ action: ACTION.FINISH, payload: { qid: context.qid, wid: cluster.worker.id } });
+    process.send({ action: ACTION.FINISH, payload: { queueId: context.flow.queueId, workerId: cluster.worker.id } });
   };
 
   process.on('message', (msg) => {
@@ -191,9 +151,9 @@ if(cluster.isMaster) {
       case ACTION.START:
         const { value, done } = msg.payload;
         if (!done && value) {
-          console.log(`${new Date().toISOString()}: Worker ${process.pid} locking qid: ${value.qid}`);
-          process.send({ action: ACTION.LOCK, payload: { qid: value.qid } });
-          processFile(Object.assign({}, value, { wid: cluster.worker.id }));
+          console.log(`${new Date().toISOString()}: Worker ${process.pid} locking queueId: ${value.queueId}`);
+          process.send({ action: ACTION.LOCK, payload: { queueId: value.queueId } });
+          processFile(value);
         }
         break;
       default:

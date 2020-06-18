@@ -8,16 +8,16 @@ import { ACTION, STATE } from './basics/constants.mjs';
 import { watch as watchConfig, tempFolder } from './basics/config.mjs';
 import httpWorker from './services/worker.mjs';
 import Queue from './services/queue.mjs';
-import CloudCache from './services/cache.mjs';
+import Cache from './services/cache.mjs';
 import Flow from './services/flow.mjs';
 import { getFolderDetails, checkForExistence, downloadFile, moveOriginal, uploadEdit, addTags } from './tasks/cloud.mjs';
 import { checkForChanges, deriveInfo, convert } from './tasks/utils.mjs';
 import { extractExif } from './tasks/exif.mjs';
 
-if(cluster.isMaster) {
+if (cluster.isMaster) {
   console.log(`${new Date().toISOString()}: Master ${process.pid} is running`);
 
-  let cloudCache = new CloudCache();
+  let cloudCache = new Cache();
 
   for (const item of watchConfig) {
     let lastWatch = 0;
@@ -95,7 +95,7 @@ if(cluster.isMaster) {
           cluster.workers[message.payload.workerId].send({ action: ACTION.START, payload: { value, done } });
         } else {
           queue = new Queue(notify);
-          cloudCache = new CloudCache();
+          cloudCache = new Cache();
         }
         // TODO: cleanup states, use queue item class
         break;
@@ -111,8 +111,8 @@ if(cluster.isMaster) {
 
   console.log(`${new Date().toISOString()}: Master cluster setting up ${numberOfWorkers} workers...`);
 
-  for(var i = 0; i < numberOfWorkers; i++) {
-      cluster.fork();
+  for (var i = 0; i < numberOfWorkers; i++) {
+    cluster.fork();
   }
 
   for (const id in cluster.workers) {
@@ -128,7 +128,6 @@ if(cluster.isMaster) {
     console.log(`${new Date().toISOString()}: Starting a new worker`);
     cluster.fork();
   });
-
 } else if (cluster.isWorker) {
   const processFile = async (context) => {
     await new Flow()

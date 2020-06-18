@@ -8,7 +8,7 @@ const TIMEOUT = 1;
 /**
  * Cache to prevent excessive network traffic to NextCloud
  */
-export default class CloudCache {
+export default class Cache {
   #_cache = {};
   #_listeners = [];
 

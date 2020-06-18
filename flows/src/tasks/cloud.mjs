@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import NextcloudClient from 'nextcloud-link';
-import CloudCache from '../services/cache.mjs';
+import Cache from '../services/cache.mjs';
 import { cloud as CloudCredentials } from '../basics/credentials.mjs';
 import { tempFolder } from '../basics/config.mjs';
 
@@ -22,8 +22,8 @@ const existsInternal = async (filePath) => {
 };
 
 const existsExternal = async (cloudCache, filePath) => {
-  if (!(cloudCache instanceof CloudCache)) {
-    throw new TypeError('A cloudCache must be a CloudCache!');
+  if (!(cloudCache instanceof Cache)) {
+    throw new TypeError('A cloudCache must be a Cache!');
   }
   if (typeof filePath !== 'string') {
     throw new TypeError('A path must be a string!');
@@ -57,8 +57,8 @@ const existsExternal = async (cloudCache, filePath) => {
  * @param folderPath The path to ensure
  */
 export const ensureFolderHierarchy = async (cloudCache, folderPath) => {
-  if (!(cloudCache instanceof CloudCache)) {
-    throw new TypeError('A cloudCache must be a CloudCache!');
+  if (!(cloudCache instanceof Cache)) {
+    throw new TypeError('A cloudCache must be a Cache!');
   }
   if (typeof folderPath !== 'string') {
     throw new TypeError('A folderPath must be a string!');
@@ -110,7 +110,7 @@ export const checkForExistence = async (context, next) => {
 
   const { tempPathOrg, derived } = context.flow.file;
 
-  let isExisting = false
+  let isExisting = false;
 
   if (!derived) {
     isExisting = await existsInternal(tempPathOrg);
@@ -213,7 +213,6 @@ const getTag = async (tagLabel) => {
   })).catch((err) => {
     console.log(err);
   });
-  return { test: true };
 };
 
 export const addTags = async (context, next) => {
@@ -225,7 +224,7 @@ export const addTags = async (context, next) => {
   }
   await client.checkConnectivity();
   const { derived } = context.flow.file;
-  derived.tagsOrg.forEach(async (tagLabel) => {  // TODO: foreach doesn't handle async well
+  derived.tagsOrg.forEach(async (tagLabel) => { // FIXME: foreach doesn't handle async well
     const tag = await getTag(tagLabel);
     console.log('tagLabel', tag);
   });

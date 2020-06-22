@@ -11,15 +11,16 @@ export default class Queue {
   #_generator;
   #_idGenerator;
   #_isInterrupting = false;
-  #_isProcessing = false;
-  #_notify;
+  #_broadcast;
+  #_waitTime;
 
   /**
    * Create a Queue
-   * @param { function } notify The method to notify actions
+   * @param { function } broadcast The method to broadcast actions
    */
-  constructor (notify) {
-    this.#_notify = notify;
+  constructor (broadcast, waitTime = TIMEOUT) {
+    this.#_broadcast = broadcast;
+    this.#_waitTime = waitTime;
     this.#_idGenerator = this.#_idGeneratorFunction();
     this.#_generator = this.#_generatorFunction();
   }
@@ -60,7 +61,7 @@ export default class Queue {
     const queueSize = this.#_queue.length;
     this.#_interruptAll();
 
-    const { sleep, interrupt } = sleeper(TIMEOUT, TIME_UNIT.SECOND);
+    const { sleep, interrupt } = sleeper(this.#_waitTime, TIME_UNIT.SECOND);
     this.#_interrupts.push(interrupt);
     let isError = false;
     await sleep.catch((err) => {
@@ -73,7 +74,7 @@ export default class Queue {
 
     if (this.#_queue.length === queueSize) {
       this.#_generator = this.#_generatorFunction();
-      this.#_notify({ action: ACTION.START })
+      this.#_broadcast({ action: ACTION.START })
     }
   };
 

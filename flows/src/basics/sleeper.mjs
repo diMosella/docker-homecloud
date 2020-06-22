@@ -21,5 +21,5 @@ export default (waitTime, timeUnit = TIME_UNIT.MINUTE, shouldReject = false) => 
       clearTimeout(_timer);
       _reject('interrupted');
     }
-  }
+  };
 };

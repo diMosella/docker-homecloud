@@ -16,19 +16,19 @@ const noConvert = async (context, next) => {
   await next();
 };
 const conversionMap = {
-  jpg: { converters: [ imageConvert ], editExtension: 'jpg' },
-  jpeg: { converters: [ imageConvert ], editExtension: 'jpg' },
-  png: { converters: [ imageConvert ] },
-  arw: { converters: [ rawConvert, imageConvert ], editExtension: 'jpg' },
-  mp4: { converters: [ movieConvert ], editExtension: 'mp4' },
-  mov: { converters: [ movieConvert ], editExtension: 'mp4' },
-  mts: { converters: [ movieConvert ], editExtension: 'mp4' },
-  pdf: { converters: [ documentConvert ] },
-  aae: { converters: [ noConvert ] }
+  jpg: { converters: [imageConvert], editExtension: 'jpg' },
+  jpeg: { converters: [imageConvert], editExtension: 'jpg' },
+  png: { converters: [imageConvert] },
+  arw: { converters: [rawConvert, imageConvert], editExtension: 'jpg' },
+  mp4: { converters: [movieConvert], editExtension: 'mp4' },
+  mov: { converters: [movieConvert], editExtension: 'mp4' },
+  mts: { converters: [movieConvert], editExtension: 'mp4' },
+  pdf: { converters: [documentConvert] },
+  aae: { converters: [noConvert] }
 };
 
 const sonyReg = /^(DSC)?\d{5}\.(MTS|ARW)$/i;
-const scanReg = /^SCAN\-[a-z]{1}(\d{4})?\.PDF$/i;
+const scanReg = /^SCAN-[a-z]{1}(\d{4})?\.PDF$/i;
 const iPhoneReg = /^IMG_\d{4}\.(JPG|MOV|AAE)$/i;
 const extReg = /\.(JPG|JPEG|PNG|AAE|ARW|MP4|MOV|MTS|PDF)$/i;
 
@@ -44,7 +44,7 @@ export const checkForChanges = (getLastWatch) => async (context, next) => {
     throw new TypeError('LastWatch must be a number!');
   }
 
-  if(!Array.isArray(context.flow.folder.changes)) {
+  if (!Array.isArray(context.flow.folder.changes)) {
     context.flow.folder.changes = [];
   }
 
@@ -81,8 +81,8 @@ export const deriveInfo = async (context, next) => {
     new Date(cleanExifDate(exif.FileModifyDate)),
     new Date(details.lastModified)
   ]
-      .filter((date) => date instanceof Date && !isNaN(date) && date.valueOf() > 0)
-      .sort((dateA, dateB) => dateA.valueOf() - dateB.valueOf());
+    .filter((date) => date instanceof Date && !isNaN(date) && date.valueOf() > 0)
+    .sort((dateA, dateB) => dateA.valueOf() - dateB.valueOf());
 
   const { Make, Model } = exif;
   const { name } = details;

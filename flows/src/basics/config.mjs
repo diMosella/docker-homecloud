@@ -6,7 +6,7 @@ export const watch = [
   {
     frequency: '*/2 7-21 * * *',
     paths: [SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN]
-        .map((item) => SOURCE.properties[item].code)
+      .map((item) => SOURCE.properties[item].code)
   }
 ];
 

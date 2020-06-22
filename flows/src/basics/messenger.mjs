@@ -1,7 +1,7 @@
 'use strict';
 
-import { TIME_UNIT } from './constants.mjs';
 import sleeper from './sleeper.mjs';
+import { TIME_UNIT } from './constants.mjs';
 
 const TIMEOUT = 0.1;
 
@@ -37,7 +37,7 @@ export default (message, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => new
       resolve(v0);
     } else {
       tooLate();
-      reject('no response message');
+      reject(new Error('no response message'));
     }
   });
 });

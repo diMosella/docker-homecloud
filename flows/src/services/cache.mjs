@@ -38,10 +38,19 @@ export default class Cache {
     }
   };
 
+  /**
+   * Get the complete cache
+   * @returns { Object } The cached structure
+   */
   get get () {
     return this.#_cache;
   }
 
+  /**
+   * Get the value assigned to the path
+   * @param { String } path The path to get the cached value for
+   * @returns { Boolean | Object } The cached value for the path
+   */
   getByPath = (path) => {
     if (typeof path !== 'string') {
       throw new TypeError('A path must be a string!');
@@ -56,6 +65,12 @@ export default class Cache {
     }, this.#_cache);
   }
 
+  /**
+   * Add or update a path to / in the cache
+   * @param { String } path The path to add
+   * @param { Boolean | Object } value The value to set to the path
+   * @returns { Object } The resulting cached structure
+   */
   set = (path, value) => {
     if (typeof path !== 'string') {
       throw new TypeError('A path must be a string!');
@@ -83,6 +98,13 @@ export default class Cache {
     return this.#_cache;
   };
 
+  /**
+   * Promise to wait for paths being set by other parallel process
+   * @param { String } path The path to listen for being set
+   * @param { Number } [waitTime = 1] The time value to wait before rejecting
+   * @param { Number } [timeUnit = TIME_UNIT.SECOND] The time unit
+   * @returns { Promise } The promise which will resolve when the parallel process finishes
+   */
   listen = (path, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => {
     if (typeof path !== 'string') {
       throw new TypeError('A path must be a string!');

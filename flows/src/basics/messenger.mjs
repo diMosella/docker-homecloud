@@ -23,6 +23,12 @@ const messenger = () => {
   };
 };
 
+/**
+ * Promise to emulate request - response for messages between (cluster) members
+ * @param { String } message
+ * @param { Number } waitTime
+ * @param { Number } timeUnit
+ */
 export default (message, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => new Promise((resolve, reject) => {
   const { sleep, interrupt : wakeUp } = sleeper(waitTime, timeUnit, true);
   const { send, receive, interrupt : tooLate } = messenger();

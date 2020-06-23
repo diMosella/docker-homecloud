@@ -19,7 +19,7 @@ export const convert = async (context) => {
 
   let isError = false;
   await asyncExec('rawtherapee-cli',
-      ['-o', `${tempPathIntermediate}`, '-t', '-Y', '-d', '-c', path.resolve(tempPathOrg)]
+    ['-o', `${tempPathIntermediate}`, '-t', '-Y', '-d', '-c', path.resolve(tempPathOrg)]
   ).catch(error => {
     console.log('error:', error);
     isError = true;

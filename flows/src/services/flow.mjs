@@ -53,8 +53,8 @@ export default class Flow {
 
   /**
    * Add a given node
-   * @param node
-   * @returns The Flow
+   * @param { Function } node The step to add to the flow
+   * @returns { Flow} The Flow, to enable chaining
    */
   add (node) {
     if (typeof node !== 'function') {
@@ -64,6 +64,10 @@ export default class Flow {
     return this;
   }
 
+  /**
+   * Perform the flow steps in sequence
+   * @param { Object } context The context to operate on
+   */
   async go (context) {
     const errorHandler = (error) => console.error('error', error);
     const outcomeHandler = (outcome) => { if (outcome) console.log('outcome', outcome); };

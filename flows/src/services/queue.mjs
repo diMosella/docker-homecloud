@@ -53,6 +53,10 @@ export default class Queue {
     }
   }
 
+  /**
+   * Add an item to the queue, and when no new items arrive, start the processing
+   * @param { Object } itemPayload
+   */
   push = async (itemPayload) => {
     if (!itemPayload) {
       return;
@@ -78,6 +82,10 @@ export default class Queue {
     }
   };
 
+  /**
+   * Mark a queue item as locked, being processed
+   * @param { Number } id The id of the item to be locked
+   */
   lock = (id) => {
     const itemId = this.#_queue.findIndex((item) => item.queueId === id);
     if (itemId !== -1) {
@@ -85,5 +93,9 @@ export default class Queue {
     }
   }
 
+  /**
+   * Get the next item to be processed
+   * @param value Not yet implemented
+   */
   next = (value) => this.#_generator.next(value);
 }

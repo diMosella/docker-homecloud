@@ -15,7 +15,7 @@ export const extractExif = async (context, next) => {
   }
 
   let isError = false;
-  const { stdout, stderr } = await asyncExec('exiftool', ['-j', '-a', path.resolve(context.flow.file.tempPathOrg)]).catch(error => {
+  const { stdout } = await asyncExec('exiftool', ['-j', '-a', path.resolve(context.flow.file.tempPathOrg)]).catch(error => {
     console.log('error:', error);
     isError = true;
     return error;

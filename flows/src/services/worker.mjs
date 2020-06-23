@@ -58,7 +58,7 @@ export default (processId, workerId) => {
   app.use(healthRouter.routes());
   app.use(serve(docroot));
 
-  app.listen({ port, host }, () => {
+  return app.listen({ port, host }, () => {
     console.log(`${new Date().toISOString()}: Flows listening on ${host}:${port}.`);
   });
 };

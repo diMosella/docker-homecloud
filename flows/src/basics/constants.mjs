@@ -11,7 +11,7 @@ const USERS = {
 export const FILE_CATEGORY = enumerate('media', 'docs');
 
 export const STATE = enumerate('validated', 'queued', 'locked', 'processed');
-export const ACTION = enumerate (
+export const ACTION = enumerate(
   new EnumProperties('ping', 'ping to check alive'),
   new EnumProperties('add', 'add item to queue'),
   new EnumProperties('wait', 'wait to start queue'),

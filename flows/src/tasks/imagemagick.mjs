@@ -21,12 +21,12 @@ export const convert = async (context) => {
   const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}${isPDF ? '.tif' : ''}`);
   const original = tempPathIntermediate || tempPathOrg;
   const options = isPDF
-    ? [ '-density', '200', '-resize', '2490x3510' ]
+    ? ['-density', '200', '-resize', '2490x3510']
     : ['-auto-gamma', '-auto-level', '-normalize'];
 
   let isError = false;
   await asyncExec('convert',
-      [path.resolve(original), ...options, tempPathEdit]
+    [path.resolve(original), ...options, tempPathEdit]
   ).catch(error => {
     console.log('error:', error);
     isError = true;

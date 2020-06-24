@@ -92,21 +92,21 @@ export const deriveInfo = async (context, next) => {
 
   const tags = [];
   let category = FILE_CATEGORY.MEDIA;
-  let source = SOURCE.properties[SOURCE.EXT].label;
+  let source = SOURCE.getProperty(SOURCE.EXT, 'label');
   if (camera === CAMERA.NEX_5T && make === SOURCE.SONY && folder === SOURCE.SONY && sonyReg.test(name)) {
-    tags.push(SOURCE.properties[make].label);
-    source = SOURCE.properties[make].label;
+    tags.push(SOURCE.getProperty(make, 'label'));
+    source = SOURCE.getProperty(make, 'label');
   } else if ((folder === SOURCE.ABIGAIL_SCAN || folder === SOURCE.WIM_SCAN || folder === SOURCE.DIMOSELLA_SCAN) && scanReg.test(name)) {
-    tags.push(SOURCE.properties[folder].label);
+    tags.push(SOURCE.getProperty(folder, 'label'));
     tags.push('Scan');
     category = FILE_CATEGORY.DOCS;
-    source = `${SOURCE.properties[folder].label}-Scan`;
+    source = `${SOURCE.getProperty(folder, 'label')}-Scan`;
   } else if (camera === CAMERA.IPHONE_SE && (folder === SOURCE.ABIGAIL || folder === SOURCE.WIM) && iPhoneReg.test(name)) {
-    tags.push(SOURCE.properties[folder].label);
-    tags.push(CAMERA.properties[camera].label.replace(/\s/, ''));
-    source = `${SOURCE.properties[folder].label}-${CAMERA.properties[camera].label.replace(/\s/, '')}`;
+    tags.push(SOURCE.getProperty(folder, 'label'));
+    tags.push(CAMERA.getProperty(camera, 'label').replace(/\s/, ''));
+    source = `${SOURCE.getProperty(folder, 'label')}-${CAMERA.getProperty(camera, 'label').replace(/\s/, '')}`;
   } else {
-    tags.push(SOURCE.properties[SOURCE.EXT].label);
+    tags.push(SOURCE.getProperty('EXT', 'label'));
   }
 
   console.log('Derived :: source:', `${name} -> ${source}`);
@@ -115,7 +115,7 @@ export const deriveInfo = async (context, next) => {
   const month = (dates[0].getMonth() + 1).toString().padStart(2, '0');
   const date = dates[0].getDate().toString().padStart(2, '0');
 
-  tags.push(year, MONTH.properties[dates[0].getMonth()].value.toLowerCase());
+  tags.push(year, MONTH.getProperty(dates[0].getMonth(), 'value').toLowerCase());
 
   const tagsOrg = [...tags, 'org'];
   const tagsEdit = [...tags, 'edit'];
@@ -125,10 +125,10 @@ export const deriveInfo = async (context, next) => {
   const datePath = `${year}/${year}-${month}/${year}-${month}-${date}`;
   context.flow.file.derived = {
     nameOrg: `${simpleFormatDate(dates[0])}-${source}-org.${exif.FileTypeExtension}`,
-    pathOrg: `${basePaths[FILE_CATEGORY.properties[category].value].org}/${datePath}`,
+    pathOrg: `${basePaths[FILE_CATEGORY.getProperty(category, 'value')].org}/${datePath}`,
     tagsOrg,
     nameEdit: `${simpleFormatDate(dates[0])}-${source}-edit.${editExtension}`,
-    pathEdit: `${basePaths[FILE_CATEGORY.properties[category].value].edit}/${datePath}`,
+    pathEdit: `${basePaths[FILE_CATEGORY.getProperty(category, 'value')].edit}/${datePath}`,
     tagsEdit,
     editExtension
   };

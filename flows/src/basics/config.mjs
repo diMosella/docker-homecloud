@@ -9,7 +9,7 @@ export const watch = [
   {
     frequency: '*/2 7-21 * * *',
     paths: [SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN]
-      .map((item) => SOURCE.properties[item].code)
+      .map((item) => SOURCE.getProperty(item, 'code'))
   }
 ];
 
@@ -22,11 +22,11 @@ export const tempFolder = '/home/wim/temp';
  * Location to publish processed files
  */
 export const basePaths = {
-  [FILE_CATEGORY.properties[FILE_CATEGORY.MEDIA].value]: {
+  [FILE_CATEGORY.getProperty(FILE_CATEGORY.MEDIA, 'value')]: {
     org: '/vanMoosel Fotos/_originelenT',
     edit: '/vanMoosel Fotos/_edits'
   },
-  [FILE_CATEGORY.properties[FILE_CATEGORY.DOCS].value]: {
+  [FILE_CATEGORY.getProperty(FILE_CATEGORY.DOCS, 'value')]: {
     org: '/vanMoosel Scans/_originelen',
     edit: '/vanMoosel Scans'
   }

@@ -15,7 +15,7 @@ export default (waitTime, timeUnit = TIME_UNIT.MINUTE, shouldReject = false) => 
   return {
     sleep: new Promise((resolve, reject) => {
       _reject = reject;
-      _timer = setTimeout(shouldReject ? reject : resolve, waitTime * TIME_UNIT.properties[timeUnit].relativeValue * 1000);
+      _timer = setTimeout(shouldReject ? reject : resolve, waitTime * TIME_UNIT.getProperty(timeUnit, 'relativeValue') * 1000);
     }),
     interrupt: () => {
       clearTimeout(_timer);

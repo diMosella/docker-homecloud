@@ -8,11 +8,18 @@ const USERS = {
   D: 'diMosella'
 };
 
-export const FILE_CATEGORY = enumerate('media', 'docs');
+export const { instance: FILE_CATEGORY, class: FileCategoryEnum } = enumerate('media', 'docs');
 
-export const STATE = enumerate('validated', 'queued', 'locked', 'processed');
-export const ACTION = enumerate(
-  new EnumProperties('ping', 'ping to check alive'),
+export const { instance: WORKER_TYPE, class: WorkerTypeEnum } = enumerate(
+  new EnumProperties('server', 'web server worker', './src/services/serverWorker.mjs'),
+  new EnumProperties('solo', 'singleton, sequential worker', './src/services/soloWorker.mjs'),
+  new EnumProperties('converter', 'converting data worker', './src/services/converterWorker.mjs')
+);
+
+export const { instance: STATE, class: StateEnum } = enumerate('validated', 'queued', 'locked', 'processed');
+export const { instance: ACTION, class: ActionEnum } = enumerate(
+  new EnumProperties('ping', 'ping to check being alive'),
+  new EnumProperties('pong', 'pong to confirm being alive'),
   new EnumProperties('add', 'add item to queue'),
   new EnumProperties('wait', 'wait to start queue'),
   new EnumProperties('start', 'start processing queue'),
@@ -20,20 +27,20 @@ export const ACTION = enumerate(
   new EnumProperties('finish', 'finish processing queue item')
 );
 
-export const TIME_UNIT = enumerate(
+export const { instance: TIME_UNIT, class: TimeUnitEnum } = enumerate(
   new EnumProperties('hour', 'hours', 'hh', 3600),
   new EnumProperties('minute', 'minutes', 'mm', 60),
   new EnumProperties('second', 'seconds', 'ss', 1)
 );
 
-export const CAMERA = enumerate(
+export const { instance: CAMERA, class: CameraEnum } = enumerate(
   new EnumProperties('iPhone_SE', 'iPhone SE'),
   new EnumProperties('NEX_5T', 'NEX-5T'),
   new EnumProperties('M476dn', 'M476dn'),
   new EnumProperties('import', 'import')
 );
 
-export const SOURCE = enumerate(
+export const { instance: SOURCE, class: SourceEnum } = enumerate(
   new EnumProperties(USERS.A, USERS.A, `/Uploads/${USERS.A} iPhoneSE`),
   new EnumProperties(USERS.W, USERS.W, `/Uploads/${USERS.W} iPhoneSE`),
   new EnumProperties(USERS.D, USERS.D, `/Uploads/${USERS.D}`),
@@ -44,4 +51,9 @@ export const SOURCE = enumerate(
   new EnumProperties('ext', 'Extern')
 );
 
-export const MONTH = enumerate('januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december');
+export const { instance: MONTH, class: MonthEnum } = enumerate(
+  'januari', 'februari', 'maart',
+  'april', 'mei', 'juni',
+  'juli', 'augustus', 'september',
+  'oktober', 'november', 'december'
+);

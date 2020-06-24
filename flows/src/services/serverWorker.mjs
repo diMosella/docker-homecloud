@@ -9,7 +9,8 @@ import { notify } from '../tasks/trigger.mjs';
 import messenger from '../basics/messenger.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
-export default (processId, workerId) => {
+export const startServer = () => {
+  const processId = process.pid;
   const app = new Koa();
   const triggerRouter = new Router();
   const healthRouter = new Router();
@@ -17,7 +18,7 @@ export default (processId, workerId) => {
   // const host = '192.168.50.219';
   const host = 'localhost';
   const __dirname = path.resolve();
-  const docroot = path.join(__dirname, '../');
+  const docroot = path.join(__dirname, './src/public');
 
   triggerRouter.get('/trigger', notify);
   triggerRouter.use(json());
@@ -25,8 +26,10 @@ export default (processId, workerId) => {
 
   healthRouter.get('/status', async (ctx, _next) => {
     const startTimestamp = Date.now();
-    const message = await messenger({ action: ACTION.PING, payload: { workerId } }).catch((err) => console.log('no-msg', err));
-    if (message && message.action === ACTION.PING) {
+    const message = await messenger({ action: ACTION.PING, payload: { processId } }).catch((err) => console.log('no-msg', err));
+    console.log(`${new Date().toISOString()}: Worker ${processId} received a message ('${ACTION.getProperty(message.action, 'label')}')`);
+
+    if (message && message.action === ACTION.PONG) {
       ctx.body = { success: message.payload.healthTimestamp - startTimestamp > 0 };
     } else {
       ctx.body = { success: false };
@@ -62,3 +65,7 @@ export default (processId, workerId) => {
     console.log(`${new Date().toISOString()}: Flows listening on ${host}:${port}.`);
   });
 };
+
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}

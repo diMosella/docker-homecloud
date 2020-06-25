@@ -1,23 +1,35 @@
 'use strict';
 
+import { Worker } from 'cluster';
+import { ChildProcess } from 'child_process';
 import sleeper from './sleeper.mjs';
 import { TIME_UNIT } from './constants.mjs';
 
 const TIMEOUT = 0.1;
 
-const messenger = () => {
+const messenger = (processRef) => {
   let _reject = null;
   let _resolve = null;
   const listener = (message) => _resolve(message);
+  let targetProcess;
+  if (typeof process.send === 'function' && typeof process.once === 'function' &&
+      typeof process.removeListener === 'function') {
+    targetProcess = process;
+  } else if (processRef instanceof Worker || processRef instanceof ChildProcess) {
+    targetProcess = processRef;
+  } else {
+    throw new TypeError('processRef should be either a Worker or a ChildProcess');
+  }
+
   return {
     receive: new Promise((resolve, reject) => {
       _reject = reject;
       _resolve = resolve;
-      process.once('message', listener);
+      targetProcess.once('message', listener);
     }),
-    send: (message) => process.send(message),
+    send: (message) => targetProcess.send(message),
     interrupt: () => {
-      process.removeListener('message', listener);
+      targetProcess.removeListener('message', listener);
       _reject('interrupted');
     }
   };
@@ -26,13 +38,13 @@ const messenger = () => {
 /**
  * Promise to emulate request - response for messages between (cluster) members
  * @param { String } message
+ * @param { Worker | ChildProcess } processRef
  * @param { Number } waitTime
  * @param { Number } timeUnit
  */
-export default (message, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => new Promise((resolve, reject) => {
+export default (message, processRef, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => new Promise((resolve, reject) => {
   const { sleep, interrupt : wakeUp } = sleeper(waitTime, timeUnit, true);
-  const { send, receive, interrupt : tooLate } = messenger();
-
+  const { send, receive, interrupt : tooLate } = messenger(processRef);
   Promise.allSettled([
     Promise.race([sleep, receive]),
     Promise.resolve(send(message))

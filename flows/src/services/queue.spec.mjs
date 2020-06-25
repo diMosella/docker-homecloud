@@ -1,3 +1,5 @@
+'use strict';
+
 import chai from 'chai';
 import Queue from './queue.mjs';
 import sleeper from '../basics/sleeper.mjs';

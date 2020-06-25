@@ -14,7 +14,8 @@ const createWorker = (type) => {
   const exec = WORKER_TYPE.getProperty(type, 'code');
   console.log(`${new Date().toISOString()}: Starting a new ${WORKER_TYPE.getProperty(type, 'label')}`);
   cluster.setupMaster({
-    exec
+    exec,
+    args: ['--start']
   });
   return cluster.fork();
 };
@@ -32,23 +33,6 @@ export default class {
     console.log(`${new Date().toISOString()}: Worker ${processId} delivered a message ('${ACTION.getProperty(message.action, 'label')}')`);
 
     switch (message.action) {
-      case ACTION.ADD:
-        // queue.push(message.payload);
-        break;
-      case ACTION.LOCK:
-        // queue.lock(message.payload.queueId);
-        break;
-      case ACTION.FINISH:
-        // const { value, done } = queue.next();
-        // if (!done && value) {
-        //   value.flow.workerId = message.payload.workerId;
-        //   cluster.workers[message.payload.workerId].send({ action: ACTION.START, payload: { value, done } });
-        // } else {
-        //   queue = new Queue(notify);
-        //   cloudCache = new Cache();
-        // }
-        // TODO: cleanup states, use queue item class
-        break;
       case ACTION.PING:
         const foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);
         if (foundCandidate) {
@@ -67,8 +51,7 @@ export default class {
     if (type === WORKER_TYPE.SOLO) {
       const candidateIndex = this.#_workers.findIndex((candidate) => candidate.type === WORKER_TYPE.SOLO);
       if (candidateIndex !== -1) {
-        console.error('only one SOLO worker is allowed to be active');
-        return;
+        throw new Error('only one SOLO worker is allowed to be active');
       }
     }
     const worker = createWorker(type);
@@ -90,7 +73,6 @@ export default class {
     if (foundCandidate) {
       return foundCandidate.type;
     }
+    return null;
   };
-
-  getWorkerOf
 }

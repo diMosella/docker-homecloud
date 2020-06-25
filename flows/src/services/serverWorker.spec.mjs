@@ -1,3 +1,5 @@
+'use strict';
+
 import chai from 'chai';
 import chaiHTTP from 'chai-http';
 import { startServer } from './serverWorker.mjs';
@@ -14,14 +16,19 @@ describe('(Service) serverWorker', () => {
   });
 
   describe('which should start a http server', () => {
+    let testWorker;
+
+    after(() => {
+      testWorker.close();
+    });
+
     it('should return statusinfo', async () => {
-      const testWorker = startServer();
+      testWorker = startServer();
       await sleeper(0.5, TIME_UNIT.SECOND).sleep;
       const response = await request(testWorker)
         .get('/index.json');
       expect(response.statusCode).to.eql(200);
       expect(response.body).to.eql({ success: true });
-      testWorker.close();
     });
   });
 });

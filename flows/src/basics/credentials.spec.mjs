@@ -1,3 +1,5 @@
+'use strict';
+
 import chai from 'chai';
 import { cloud } from './credentials.mjs';
 

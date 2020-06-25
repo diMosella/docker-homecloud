@@ -1,3 +1,5 @@
+'use strict';
+
 import chai from 'chai';
 import sleeper from './sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';

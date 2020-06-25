@@ -1,3 +1,5 @@
+'use strict';
+
 import chai from 'chai';
 import { enumerate, EnumProperties, Enum } from './enum.mjs';
 

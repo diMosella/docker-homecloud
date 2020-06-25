@@ -1,17 +1,11 @@
-import messenger from './messenger.mjs';
-// import { TIME_UNIT } from '../basics/constants.mjs';
+'use strict';
 
-const init = async () => {
-  process.on('message', (msg) => {
-    const { type } = msg;
-    if (type === 'response') {
-      process.send({ type });
-    }
-  });
-  const transporter = messenger({ type: 'request' });
-  process.send({ type: 'type', value: typeof transporter, isPromise: transporter instanceof Promise });
-  await transporter;
-  process.send({ type: 'final' });
-};
-
-init();
+process.on('message', (msg) => {
+  switch (msg.type) {
+    case 'request':
+      process.send({ type: 'response' });
+      break;
+    default:
+      break;
+  }
+});

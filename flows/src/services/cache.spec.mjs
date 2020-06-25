@@ -1,3 +1,5 @@
+'use strict';
+
 import chai from 'chai';
 import Cache from './cache.mjs';
 

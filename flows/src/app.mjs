@@ -19,6 +19,7 @@ workerManager.add(WORKER_TYPE.SERVER);
 
 cluster.on('online', (worker) => {
   console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} is online`);
+  // TODO: if queue is running give this new worker the start signal
 });
 
 cluster.on('exit', (worker, code, signal) => {
@@ -39,53 +40,8 @@ cluster.on('exit', (worker, code, signal) => {
   }
 
   workerManager.add(type);
-  // TODO: if queue is running give this new worker the start signal
 });
 
-//   let cloudCache = new Cache();
-
-//   for (const item of watchConfig) {
-//     let lastWatch = 0;
-//     const getLastWatch = () => lastWatch;
-//     cron.schedule(item.frequency, async () => {
-//       let count = 0;
-//       const watched = Date.now();
-//       for (const path of item.paths) {
-//         const context = {
-//           flow: {
-//             folder: {
-//               name: path
-//             }
-//           }
-//         };
-//         await new Flow()
-//           .add(getFolderDetails)
-//           .add(checkForChanges(getLastWatch))
-//           .go(context);
-//         if (++count === item.paths.length) {
-//           lastWatch = Date.now();
-//         }
-//         for (const fileDetails of context.flow.folder.changes) {
-//           const filePath = resolve(`${context.flow.folder.name}/${fileDetails.name}`);
-//           queue.push({
-//             flow: {
-//               file: {
-//                 path: filePath,
-//                 folder: context.flow.folder.name,
-//                 details: fileDetails,
-//                 timestamp: watched,
-//                 state: STATE.VALIDATED,
-//                 tempPathOrg: resolve(`${tempFolder}/${basename(filePath)}`)
-//               }
-//             }
-//           });
-//         }
-//       }
-//     }, {
-//       scheduled: true,
-//       timezone: 'Europe/Amsterdam'
-//     });
-//   }
 
 //   const notify = (msg) => {
 //     switch (msg.action) {
@@ -132,27 +88,6 @@ cluster.on('exit', (worker, code, signal) => {
 //     }
 //   };
 
-//   const numberOfWorkers = cpus().length;
-
-//   console.log(`${new Date().toISOString()}: Master cluster setting up ${numberOfWorkers} workers...`);
-
-//   for (var i = 0; i < numberOfWorkers; i++) {
-//     cluster.fork();
-//   }
-
-//   for (const id in cluster.workers) {
-//     cluster.workers[id].on('message', messageHandler(cluster.workers[id].process.pid));
-//   }
-
-//   cluster.on('online', (worker) => {
-//     console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} is online`);
-//   });
-
-//   cluster.on('exit', (worker, code, signal) => {
-//     console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} died with code: ${code} and signal: ${signal}`);
-//     console.log(`${new Date().toISOString()}: Starting a new worker`);
-//     cluster.fork();
-//   });
 // } else if (cluster.isWorker) {
 //   const processFile = async (context) => {
 //     await new Flow()

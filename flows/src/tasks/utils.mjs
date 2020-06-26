@@ -9,18 +9,18 @@ import { basePaths } from '../basics/config.mjs';
 import { SOURCE, CAMERA, MONTH, FILE_CATEGORY } from '../basics/constants.mjs';
 
 const cleanExifDate = (exifDate) => exifDate
-  ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, `$1-$2-$3T`).replace(/\s+DST\s*$/i, '')
+  ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, '$1-$2-$3T').replace(/\s+DST\s*$/i, '')
   : null;
 const simpleFormatDate = (date) => date.toISOString().replace(/(-|:|\.\d{3}Z)/g, '');
 const noConvert = async (context, next) => {
   await next();
 };
 const conversionMap = {
-  jpg: { converters: [imageConvert], editExtension: 'jpg' },
+  jpg: { converters: [imageConvert] },
   jpeg: { converters: [imageConvert], editExtension: 'jpg' },
   png: { converters: [imageConvert] },
   arw: { converters: [rawConvert, imageConvert], editExtension: 'jpg' },
-  mp4: { converters: [movieConvert], editExtension: 'mp4' },
+  mp4: { converters: [movieConvert] },
   mov: { converters: [movieConvert], editExtension: 'mp4' },
   mts: { converters: [movieConvert], editExtension: 'mp4' },
   pdf: { converters: [documentConvert] },
@@ -32,24 +32,24 @@ const scanReg = /^SCAN-[a-z]{1}(\d{4})?\.PDF$/i;
 const iPhoneReg = /^IMG_\d{4}\.(JPG|MOV|AAE)$/i;
 const extReg = /\.(JPG|JPEG|PNG|AAE|ARW|MP4|MOV|MTS|PDF)$/i;
 
-export const checkForChanges = (getLastWatch) => async (context, next) => {
+export const checkForChanges = (lastScan) => async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
   if (typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || !Array.isArray(context.flow.folder.details)) {
     throw new TypeError('A context flow must contain folder details of type array!');
   }
-  const lastWatch = getLastWatch();
-  if (typeof lastWatch !== 'number') {
-    throw new TypeError('LastWatch must be a number!');
+  const lastScanTimestamp = lastScan.timestamp;
+  if (typeof lastScanTimestamp !== 'number') {
+    throw new TypeError('lastScanTimestamp must be a number!');
   }
 
   if (!Array.isArray(context.flow.folder.changes)) {
     context.flow.folder.changes = [];
   }
 
-  if (lastWatch > context.flow.folder.lastModified) {
-    console.log('lW', lastWatch, context.flow.folder.lastModified);
+  if (lastScanTimestamp > context.flow.folder.lastModified) {
+    console.log('lW', lastScanTimestamp, context.flow.folder.lastModified);
     return;
   }
 

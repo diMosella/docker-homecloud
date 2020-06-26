@@ -30,7 +30,7 @@ describe('(Service) workerManager', () => {
       assert.throws(testManager.add, TypeError);
       assert.throws(() => testManager.add(17), TypeError);
       testManager.add(WORKER_TYPE.SOLO);
-      await sleeper(0.1, TIME_UNIT.SECOND).sleep;
+      await sleeper(0.2, TIME_UNIT.SECOND).sleep;
       assert.throws(() => testManager.add(WORKER_TYPE.SOLO), Error);
     });
     it('a message handler created', async () => {

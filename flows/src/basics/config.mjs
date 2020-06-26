@@ -3,12 +3,12 @@
 import { SOURCE, FILE_CATEGORY } from './constants.mjs';
 
 /**
- * Cron configuration: frequency and paths to watch
+ * Cron configuration: frequency and locations to watch
  */
 export const watch = [
   {
     frequency: '*/2 7-21 * * *',
-    paths: [SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN]
+    locations: [SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN]
       .map((item) => SOURCE.getProperty(item, 'code'))
   }
 ];

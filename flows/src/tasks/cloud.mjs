@@ -86,20 +86,22 @@ export const ensureFolderHierarchy = async (cloudCache, folderPath) => {
   }
 };
 
-export const getFolderDetails = async (context, next) => {
+const getFolderDetails = async (context, next) => {
+  console.log('Cloud folder details');
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || typeof context.flow.folder.name !== 'string') {
-    throw new TypeError('A context flow must contain a folder name of type string!');
+  if (typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || typeof context.flow.folder.location !== 'string') {
+    throw new TypeError('A context flow must contain a folder location of type string!');
   }
+  const { location } = context.flow.folder;
   await client.checkConnectivity();
-  const pathParts = context.flow.folder.name.split('/').filter((part) => part !== '');
+  const pathParts = location.split('/').filter((part) => part !== '');
   const nodeName = pathParts.pop();
   const parentDetails = await client.getFolderFileDetails(`/${pathParts.join('/')}`);
   const nodeDetails = parentDetails.find((item) => item.name === nodeName);
   context.flow.folder.lastModified = new Date(nodeDetails.lastModified).valueOf();
-  context.flow.folder.details = await client.getFolderFileDetails(context.flow.folder.name);
+  context.flow.folder.details = await client.getFolderFileDetails(location);
   return await next();
 };
 
@@ -205,7 +207,7 @@ export const uploadEdit = async (context, next) => {
 };
 
 const getTag = async (tagLabel) => {
-  return await client.put(`/remote.php/dav/systemtags/`, JSON.stringify({
+  return await client.put('/remote.php/dav/systemtags/', JSON.stringify({
     name: tagLabel,
     userVisible: true,
     userAssignable: true,
@@ -228,4 +230,8 @@ export const addTags = async (context, next) => {
     const tag = await getTag(tagLabel);
     console.log('tagLabel', tag);
   });
+};
+
+export default {
+  getFolderDetails
 };

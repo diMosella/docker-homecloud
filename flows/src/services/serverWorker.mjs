@@ -66,6 +66,6 @@ export const startServer = () => {
   });
 };
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.argv.includes('--start')) {
   startServer();
 }

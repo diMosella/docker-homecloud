@@ -17,6 +17,9 @@ const messenger = (processRef) => {
     targetProcess = process;
   } else if (processRef instanceof Worker || processRef instanceof ChildProcess) {
     targetProcess = processRef;
+  } else if (typeof process.emit === 'function') {
+    targetProcess = process;
+    targetProcess.send = (message) => targetProcess.emit('message', message);
   } else {
     throw new TypeError('processRef should be either a Worker or a ChildProcess');
   }

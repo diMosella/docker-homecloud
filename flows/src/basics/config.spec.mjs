@@ -11,7 +11,7 @@ describe('(Basics) config', () => {
     for (const watchItem of watch) {
       expect(watchItem).to.be.a('object');
       expect(watchItem.frequency).to.be.a('string');
-      expect(watchItem.paths).to.be.an.instanceof(Array);
+      expect(watchItem.locations).to.be.an.instanceof(Array);
     }
   });
 

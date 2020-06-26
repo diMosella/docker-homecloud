@@ -14,8 +14,7 @@ const createWorker = (type) => {
   const exec = WORKER_TYPE.getProperty(type, 'code');
   console.log(`${new Date().toISOString()}: Starting a new ${WORKER_TYPE.getProperty(type, 'label')}`);
   cluster.setupMaster({
-    exec,
-    args: ['--start']
+    exec
   });
   return cluster.fork();
 };

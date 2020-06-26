@@ -3,6 +3,7 @@
 import chai from 'chai';
 import cluster from 'cluster';
 import WorkerManager from './workerManager.mjs';
+import soloWorker from './soloWorker.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import messenger from '../basics/messenger.mjs';
 import { ACTION, TIME_UNIT, WORKER_TYPE } from '../basics/constants.mjs';
@@ -11,6 +12,17 @@ const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {
+  const start = sinon.fake(() => {
+    context.flow.folder.lastModified = Date.now();
+    context.flow.folder.details = [];
+    return await next();
+  });
+  sinon.replace(cloud, 'getFolderDetails', getFolderDetailsStub);
+
+  after(() => {
+    sinon.restore();
+    testWorker.close();
+  });
   const testManager = new WorkerManager();
 
   after(() => {

@@ -11,9 +11,9 @@ const USERS = {
 export const { instance: FILE_CATEGORY, class: FileCategoryEnum } = enumerate('media', 'docs');
 
 export const { instance: WORKER_TYPE, class: WorkerTypeEnum } = enumerate(
-  new EnumProperties('server', 'web server worker', './src/services/serverWorker.mjs'),
-  new EnumProperties('solo', 'singleton, sequential worker', './src/services/soloWorker.mjs'),
-  new EnumProperties('converter', 'converting data worker', './src/services/converterWorker.mjs')
+  new EnumProperties('server', 'web server worker', './src/services/serverWorkerProcess.mjs'),
+  new EnumProperties('solo', 'singleton, sequential worker', './src/services/soloWorkerProcess.mjs'),
+  new EnumProperties('converter', 'converting data worker', './src/services/converterWorkerProcess.mjs')
 );
 
 export const { instance: STATE, class: StateEnum } = enumerate('validated', 'queued', 'locked', 'processed');

@@ -9,7 +9,7 @@ import { notify } from '../tasks/trigger.mjs';
 import messenger from '../basics/messenger.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
-export const startServer = () => {
+const start = () => {
   const processId = process.pid;
   const app = new Koa();
   const triggerRouter = new Router();
@@ -66,6 +66,6 @@ export const startServer = () => {
   });
 };
 
-if (process.argv.includes('--start')) {
-  startServer();
-}
+export default {
+  start
+};

@@ -2,17 +2,18 @@
 
 import chai from 'chai';
 import chaiHTTP from 'chai-http';
-import { startServer } from './serverWorker.mjs';
+import serverWorker from './serverWorker.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';
 
 chai.use(chaiHTTP);
 const expect = chai.expect;
 const request = chai.request;
+const { start } = serverWorker;
 
-describe('(Service) serverWorker', () => {
+describe('(Service) serverWorker.start', () => {
   it('should be a function', async () => {
-    expect(startServer).to.be.a('function');
+    expect(start).to.be.a('function');
   });
 
   describe('which should start a http server', () => {
@@ -23,7 +24,7 @@ describe('(Service) serverWorker', () => {
     });
 
     it('should return statusinfo', async () => {
-      testWorker = startServer();
+      testWorker = start();
       await sleeper(0.5, TIME_UNIT.SECOND).sleep;
       const response = await request(testWorker)
         .get('/index.json');

@@ -11,12 +11,12 @@ const messenger = (processRef) => {
   let _reject = null;
   let _resolve = null;
   const listener = (message) => _resolve(message);
+
   let targetProcess;
-  if (typeof process.send === 'function' && typeof process.once === 'function' &&
-      typeof process.removeListener === 'function') {
-    targetProcess = process;
-  } else if (processRef instanceof Worker || processRef instanceof ChildProcess) {
+  if (processRef instanceof Worker || processRef instanceof ChildProcess) {
     targetProcess = processRef;
+  } else if (typeof process.send === 'function') {
+    targetProcess = process;
   } else if (typeof process.emit === 'function') {
     targetProcess = process;
     targetProcess.send = (message) => targetProcess.emit('message', message);

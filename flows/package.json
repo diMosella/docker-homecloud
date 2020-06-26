@@ -8,7 +8,7 @@
     "start": "node ./src/app.mjs",
     "test": "mocha --config ./test/.mocharc.yaml",
     "test:cover": "c8 npm test",
-    "test:report": "c8 report --all --exclude='node_modules' --exclude='coverage' --exclude='test' --exclude='src/**/*.spec.mjs' --exclude='src/**/*.sidecar.mjs' --exclude='src/assets' -r lcov -r text",
+    "test:report": "c8 report --all --exclude='node_modules' --exclude='coverage' --exclude='test' --exclude='src/**/*.spec.mjs' --exclude='src/**/*.sidecar.mjs' --exclude='src/**/*WorkerProcess.mjs' --exclude='src/assets' -r lcov -r text",
     "test:single": "mocha --config ./test/.mocharc.yaml -g"
   },
   "author": "diMosella",

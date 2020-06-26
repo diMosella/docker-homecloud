@@ -2,16 +2,17 @@
 
 import chai from 'chai';
 import sinon from 'sinon';
-import { startSolo } from './soloWorker.mjs';
+import soloWorker from './soloWorker.mjs';
 import cloud from '../tasks/cloud.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';
 
 const expect = chai.expect;
+const { start } = soloWorker;
 
-describe('(Service) startSolo', () => {
+describe('(Service) soloWorker.start', () => {
   it('should be a function', async () => {
-    expect(startSolo).to.be.a('function');
+    expect(start).to.be.a('function');
   });
 
   describe('which should start a solo worker', () => {
@@ -29,7 +30,7 @@ describe('(Service) startSolo', () => {
     });
 
     it('should start', async () => {
-      testWorker = startSolo();
+      testWorker = start();
       await sleeper(0.1, TIME_UNIT.SECOND).sleep;
     });
   });

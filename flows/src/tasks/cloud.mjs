@@ -87,7 +87,6 @@ export const ensureFolderHierarchy = async (cloudCache, folderPath) => {
 };
 
 const getFolderDetails = async (context, next) => {
-  console.log('Cloud folder details');
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }

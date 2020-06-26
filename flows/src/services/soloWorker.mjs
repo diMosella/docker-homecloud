@@ -46,6 +46,7 @@ const scanLocations = async (locations, queue, lastScan) => {
       .add(cloud.getFolderDetails)
       .add(checkForChanges(lastScan))
       .go(context);
+    // FIXME: what if there is (will be) network problems? => thrown error should cancel next parts of processing;
     queueChanges(queue, context.flow.folder.changes, location, scanTimestamp);
   }
   lastScan.timestamp = scanTimestamp;
@@ -61,7 +62,7 @@ const messageHandler = (message) => {
   }
 };
 
-export const startSolo = () => {
+const start = () => {
   const processId = process.pid;
 
   process.on('message', messageHandler);
@@ -88,6 +89,6 @@ export const startSolo = () => {
   };
 };
 
-if (process.argv.includes('--start')) {
-  startSolo();
-}
+export default {
+  start
+};

@@ -1,6 +1,7 @@
 'use strict';
 
 import cluster from 'cluster';
+import messenger from '../basics/messenger.mjs';
 import { ACTION, WORKER_TYPE } from '../basics/constants.mjs';
 
 if (!cluster.isMaster) {
@@ -21,6 +22,14 @@ const createWorker = (type) => {
 
 export default class {
   #_workers = []; // eslint-disable-line
+  #_processing;
+
+  constructor (processing) {
+    if (typeof processing !== 'object' || typeof processing.start !== 'function' || typeof processing.stop !== 'function') {
+      throw new TypeError('processing should be an object with start and stop functions');
+    }
+    this.#_processing = processing;
+  }
 
   /**
    * MessageHandler
@@ -30,13 +39,36 @@ export default class {
   #_createMessageBus = (processId) => async (message) => {
     // TODO: remove logging
     console.log(`${new Date().toISOString()}: Worker ${processId} delivered a message ('${ACTION.getProperty(message.action, 'label')}')`);
+    let foundCandidate;
 
     switch (message.action) {
+      case ACTION.AVAILABLE:
+        if (this.#_processing.isProcessing() === true && this.getTypeOf(processId) === WORKER_TYPE.CONVERTER) {
+          this.assignTask(processId);
+        }
+        break;
       case ACTION.PING:
-        const foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);
+        foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);
         if (foundCandidate) {
           foundCandidate.worker.send({ action: ACTION.PONG, payload: { healthTimestamp: Date.now() } });
         }
+        break;
+      case ACTION.QUEUE_PROCESS:
+        this.#_processing.start();
+        break;
+      case ACTION.QUEUE_LOCK:
+        foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
+        if (foundCandidate) {
+          foundCandidate.worker.send(message);
+        }
+        console.log('lock', message.payload);
+        break;
+      case ACTION.QUEUE_FINISH:
+        foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
+        if (foundCandidate) {
+          foundCandidate.worker.send(message);
+        }
+        console.log('finish', message.payload);
         break;
       default:
         break;
@@ -74,4 +106,16 @@ export default class {
     }
     return null;
   };
+
+  assignTask = async (processId) => {
+    const foundSoloCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
+    const foundConverterCandidate = this.#_workers.find((candidate) => candidate.id === processId && candidate.type === WORKER_TYPE.CONVERTER);
+    if (!foundSoloCandidate || !foundConverterCandidate) {
+      return false;
+    }
+    const task = await messenger({ action: ACTION.QUEUE_GET }, foundSoloCandidate.worker).catch((err) => console.log('no-task', err));
+    if (task && task.action === ACTION.QUEUE_GOT && task.payload !== null) {
+      foundConverterCandidate.worker.send(task);
+    }
+  }
 }

@@ -68,8 +68,7 @@ export default class Queue {
     const { sleep, interrupt } = sleeper(this.#_waitTime, TIME_UNIT.SECOND);
     this.#_interrupts.push(interrupt);
     let isError = false;
-    await sleep.catch((err) => {
-      console.log('err', err);
+    await sleep.catch((_err) => {
       isError = true;
     });
     if (isError) {
@@ -78,7 +77,7 @@ export default class Queue {
 
     if (this.#_queue.length === queueSize) {
       this.#_generator = this.#_generatorFunction();
-      this.#_broadcast({ action: ACTION.START })
+      this.#_broadcast(ACTION.QUEUE_PROCESS)
     }
   };
 

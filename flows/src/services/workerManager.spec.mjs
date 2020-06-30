@@ -3,27 +3,18 @@
 import chai from 'chai';
 import cluster from 'cluster';
 import WorkerManager from './workerManager.mjs';
-import soloWorker from './soloWorker.mjs';
 import sleeper from '../basics/sleeper.mjs';
-import messenger from '../basics/messenger.mjs';
 import { ACTION, TIME_UNIT, WORKER_TYPE } from '../basics/constants.mjs';
 
 const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {
-  const start = sinon.fake(() => {
-    context.flow.folder.lastModified = Date.now();
-    context.flow.folder.details = [];
-    return await next();
-  });
-  sinon.replace(cloud, 'getFolderDetails', getFolderDetailsStub);
-
-  after(() => {
-    sinon.restore();
-    testWorker.close();
-  });
-  const testManager = new WorkerManager();
+  const processing = {
+    start: () => {},
+    stop: () => {}
+  };
+  let testManager;
 
   after(() => {
     for (const id in cluster.workers) {
@@ -31,7 +22,12 @@ describe('(Service) workerManager', () => {
     }
   });
 
+  it('should throw without params', () => {
+    assert.throws(() => new WorkerManager(), TypeError);
+  });
+
   it('should be a class.', () => {
+    testManager = new WorkerManager(processing);
     expect(testManager).to.be.a('object');
     expect(testManager).to.be.an.instanceof(WorkerManager);
   });
@@ -42,19 +38,17 @@ describe('(Service) workerManager', () => {
       assert.throws(testManager.add, TypeError);
       assert.throws(() => testManager.add(17), TypeError);
       testManager.add(WORKER_TYPE.SOLO);
-      await sleeper(0.2, TIME_UNIT.SECOND).sleep;
+      await sleeper(0.1, TIME_UNIT.SECOND).sleep;
       assert.throws(() => testManager.add(WORKER_TYPE.SOLO), Error);
     });
-    it('a message handler created', async () => {
+    it('adds message event handler', async () => {
       let processRef;
       for (const id in cluster.workers) {
         processRef = cluster.workers[id];
       }
-      expect(processRef).to.be.a.instanceof(cluster.Worker);
-      const message = await messenger({ action: ACTION.PING }, processRef);
-      expect(message.action).to.eql(ACTION.PONG);
+      processRef.send({ action: ACTION.PING });
+      await sleeper(0.1, TIME_UNIT.SECOND).sleep;
     });
-
     it('public method getTypeOf', () => {
       expect(testManager.getTypeOf).to.be.a('function');
       let count = 0;

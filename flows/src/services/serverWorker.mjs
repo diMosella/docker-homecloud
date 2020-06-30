@@ -26,7 +26,7 @@ const start = () => {
 
   healthRouter.get('/status', async (ctx, _next) => {
     const startTimestamp = Date.now();
-    const message = await messenger({ action: ACTION.PING, payload: { processId } }).catch((err) => console.log('no-msg', err));
+    const message = await messenger({ action: ACTION.PING, payload: { processId } }).catch((err) => console.log('no-message', err));
     console.log(`${new Date().toISOString()}: Worker ${processId} received a message ('${ACTION.getProperty(message.action, 'label')}')`);
 
     if (message && message.action === ACTION.PONG) {

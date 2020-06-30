@@ -11,7 +11,7 @@ export const notify = async (ctx, next) => {
     VALID_REGEXP.test(actor) && VALID_REGEXP.test(owner) && VALID_REGEXP.test(path);
 
   if (isValid) {
-    process.send({ action: ACTION.ADD, payload: Object.assign({}, ctx.request.query, { timestamp: Date.now(), state: STATE.VALIDATED }) });
+    process.send({ action: ACTION.QUEUE_ADD, payload: Object.assign({}, ctx.request.query, { timestamp: Date.now(), state: STATE.QUEUED }) });
   }
   ctx.body = { success: isValid };
   await next();

@@ -115,7 +115,6 @@ export const checkForExistence = async (context, next) => {
 
   if (!derived) {
     isExisting = await existsInternal(tempPathOrg);
-    console.log('ine', tempPathOrg, isExisting);
     if (isExisting) {
       return;
     }
@@ -127,19 +126,15 @@ export const checkForExistence = async (context, next) => {
 
   isExisting = await existsInternal(tempPathEdit);
 
-  console.log('ine', tempPathEdit, isExisting);
   if (isExisting) {
     return;
   }
-  console.log('flow', context.flow);
   isExisting = await existsExternal(context.flow.cache, `${pathOrg}/${nameOrg}`);
-  console.log('exe', `${pathOrg}/${nameOrg}`, isExisting);
   if (isExisting) {
     return;
   }
 
   isExisting = await existsExternal(context.flow.cache, `${pathEdit}/${nameEdit}`);
-  console.log('exe', `${pathEdit}/${nameEdit}`, isExisting);
 
   if (isExisting) {
     return;

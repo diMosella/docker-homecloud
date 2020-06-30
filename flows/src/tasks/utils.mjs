@@ -49,7 +49,6 @@ export const checkForChanges = (lastScan) => async (context, next) => {
   }
 
   if (lastScanTimestamp > context.flow.folder.lastModified) {
-    console.log('lW', lastScanTimestamp, context.flow.folder.lastModified);
     return;
   }
 

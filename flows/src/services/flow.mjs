@@ -69,9 +69,6 @@ export default class Flow {
    * @param { Object } context The context to operate on
    */
   async go (context) {
-    const errorHandler = (error) => console.error('error', error);
-    const outcomeHandler = (outcome) => { if (outcome) console.log('outcome', outcome); };
-    const outcome = await this.#_join()(context).catch(errorHandler);
-    return outcomeHandler(outcome);
+    return await this.#_join()(context);
   }
 }

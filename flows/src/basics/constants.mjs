@@ -2,6 +2,8 @@
 
 import { EnumProperties, enumerate } from './enum.mjs';
 
+const isTest = process.env.NODE_ENV === 'test';
+
 const USERS = {
   A: 'Abigail',
   W: 'Wim',
@@ -11,20 +13,28 @@ const USERS = {
 export const { instance: FILE_CATEGORY, class: FileCategoryEnum } = enumerate('media', 'docs');
 
 export const { instance: WORKER_TYPE, class: WorkerTypeEnum } = enumerate(
-  new EnumProperties('server', 'web server worker', './src/services/serverWorkerProcess.mjs'),
-  new EnumProperties('solo', 'singleton, sequential worker', './src/services/soloWorkerProcess.mjs'),
-  new EnumProperties('converter', 'converting data worker', './src/services/converterWorkerProcess.mjs')
+  new EnumProperties('server', 'web server worker', !isTest
+    ? './src/services/serverWorkerProcess.mjs'
+    : './src/services/serverWorker.spec.sidecar.mjs'),
+  new EnumProperties('solo', 'singleton, sequential worker', !isTest
+    ? './src/services/soloWorkerProcess.mjs'
+    : './src/services/soloWorker.spec.sidecar.mjs'),
+  new EnumProperties('converter', 'converting data worker', !isTest
+    ? './src/services/converterWorkerProcess.mjs'
+    : './src/services/converterWorker.spec.sidecar.mjs')
 );
 
-export const { instance: STATE, class: StateEnum } = enumerate('validated', 'queued', 'locked', 'processed');
+export const { instance: STATE, class: StateEnum } = enumerate('queued', 'locked', 'processed');
 export const { instance: ACTION, class: ActionEnum } = enumerate(
   new EnumProperties('ping', 'ping to check being alive'),
   new EnumProperties('pong', 'pong to confirm being alive'),
-  new EnumProperties('add', 'add item to queue'),
-  new EnumProperties('wait', 'wait to start queue'),
-  new EnumProperties('start', 'start processing queue'),
-  new EnumProperties('lock', 'lock queue item'),
-  new EnumProperties('finish', 'finish processing queue item')
+  new EnumProperties('available', 'to confirm being available'),
+  new EnumProperties('queue_add', 'add item to queue'),
+  new EnumProperties('queue_process', 'process queue'),
+  new EnumProperties('queue_get', 'get next queue item'),
+  new EnumProperties('queue_got', 'got next queue item'),
+  new EnumProperties('queue_lock', 'lock queue item'),
+  new EnumProperties('queue_finish', 'finish queue item processing')
 );
 
 export const { instance: TIME_UNIT, class: TimeUnitEnum } = enumerate(

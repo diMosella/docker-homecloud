@@ -36,16 +36,18 @@ export default class {
    * @param { Number } processId The process id to create a message handler for
    * @returns { Promise } The handler as a promise
    */
-  #_createMessageBus = (processId) => async (message) => {
+  #_createMessageBus = (processId) => (message) => {
     // TODO: remove logging
     console.log(`${new Date().toISOString()}: Worker ${processId} delivered a message ('${ACTION.getProperty(message.action, 'label')}')`);
     let foundCandidate;
 
     switch (message.action) {
       case ACTION.AVAILABLE:
-        if (this.#_processing.isProcessing() === true && this.getTypeOf(processId) === WORKER_TYPE.CONVERTER) {
+        const type = this.getTypeOf(processId);
+        if (this.#_processing.isProcessing() === true && type === WORKER_TYPE.CONVERTER) {
           this.assignTask(processId);
         }
+        this.#_processing.resetRetry(type);
         break;
       case ACTION.PING:
         foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);

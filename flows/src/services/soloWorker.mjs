@@ -11,6 +11,8 @@ import LastScan from '../basics/lastScan.mjs';
 import { watch as watchConfig, tempFolder } from '../basics/config.mjs';
 import { ACTION, STATE } from '../basics/constants.mjs';
 
+let isProcessing = false;
+
 const getItem = () => {
   const { value, done } = queue.next();
   if (!done && value) {
@@ -49,10 +51,13 @@ const inbox = (message) => {
 const queueAction = (action) => {
   switch (action) {
     case ACTION.QUEUE_PROCESS:
+      isProcessing = true;
       outbox({ action });
       break;
     case ACTION.QUEUE_FINAL:
+      isProcessing = false;
       outbox({ action });
+      queue.reset();
       break;
     default:
       break;
@@ -62,7 +67,7 @@ const queueAction = (action) => {
 const queue = new Queue(queueAction);
 const taskList = [];
 
-const queueChanges = (queue, changes, location, scanTimestamp) => {
+const queueChanges = (changes, location, scanTimestamp) => {
   for (const change of changes) {
     const filePath = path.resolve(`${location}/${change.name}`);
     queue.push({
@@ -80,9 +85,11 @@ const queueChanges = (queue, changes, location, scanTimestamp) => {
   }
 };
 
-const scanLocations = async (locations, queue, lastScan) => {
+const scanLocations = async (locations, lastScan) => {
+  if (isProcessing === true) {
+    return;
+  }
   const scanTimestamp = Date.now();
-  // FIXME: deal with still running conversions
   let isError = false;
   for (const location of locations) {
     const context = {
@@ -100,7 +107,7 @@ const scanLocations = async (locations, queue, lastScan) => {
         isError = true;
       });
     if (!isError) {
-      queueChanges(queue, context.flow.folder.changes, location, scanTimestamp);
+      queueChanges(context.flow.folder.changes, location, scanTimestamp);
     }
   }
   lastScan.timestamp = scanTimestamp;
@@ -113,7 +120,7 @@ const start = () => {
 
   for (const item of watchConfig) {
     const lastScan = new LastScan();
-    const task = cron.schedule(item.frequency, () => scanLocations(item.locations, queue, lastScan), {
+    const task = cron.schedule(item.frequency, () => scanLocations(item.locations, lastScan), {
       scheduled: true,
       timezone: 'Europe/Amsterdam'
     });
@@ -121,6 +128,8 @@ const start = () => {
   }
 
   console.log(`${new Date().toISOString()}: Worker solo ${processId} at ${Date.now()}`);
+  outbox({ action: ACTION.AVAILABLE });
+
   return {
     close: () => {
       for (const task of taskList) {

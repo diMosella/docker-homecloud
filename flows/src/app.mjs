@@ -2,8 +2,9 @@
 
 import { cpus } from 'os';
 import cluster from 'cluster';
-import { WORKER_TYPE } from './basics/constants.mjs';
+import sleeper from './basics/sleeper.mjs';
 import WorkerManager from './services/workerManager.mjs';
+import { RETRY_MAX_COUNT, TIME_UNIT, WORKER_TYPE } from './basics/constants.mjs';
 
 if (!cluster.isMaster) {
   throw new Error('This app should be run as non-worker process');
@@ -12,24 +13,25 @@ if (!cluster.isMaster) {
 console.log(`${new Date().toISOString()}: Delegator ${process.pid} is running`);
 
 const cpuCount = cpus().length;
+const retries = Object.values(WORKER_TYPE).reduce((acumm, type) => Object.assign(acumm, { [type]: 0 }), {});
 let isProcessing = false;
 
 const processing = {
   start: () => {
-    console.log('start processing');
     if (isProcessing !== false) {
       return;
     }
+    console.log('start processing');
     for (let i = 0; i < cpuCount; i++) {
       workerManager.add(WORKER_TYPE.CONVERTER);
     }
     isProcessing = true;
   },
   stop: () => {
-    console.log('start processing');
     if (isProcessing !== true) {
       return;
     }
+    console.log('stop processing');
     for (const id in cluster.workers) {
       const worker = cluster.workers[id];
       const processId = worker.process.pid;
@@ -40,7 +42,14 @@ const processing = {
     }
     isProcessing = false;
   },
-  isProcessing: () => isProcessing
+  isProcessing: () => isProcessing,
+  resetRetry: async (type) => {
+    if (!(type in Object.values(WORKER_TYPE))) {
+      throw new TypeError('type should be in WorkerTypeEnum');
+    }
+    await sleeper(10, TIME_UNIT.SECONDS).sleep;
+    retries[type] = 0;
+  }
 };
 
 const workerManager = new WorkerManager(processing);
@@ -69,5 +78,8 @@ cluster.on('exit', (worker, code, signal) => {
     return;
   }
 
-  workerManager.add(type);
+  if (retries[type] < RETRY_MAX_COUNT) {
+    workerManager.add(type);
+    retries[type]++;
+  }
 });

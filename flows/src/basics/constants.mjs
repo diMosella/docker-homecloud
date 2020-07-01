@@ -68,3 +68,6 @@ export const { instance: MONTH, class: MonthEnum } = enumerate(
   'juli', 'augustus', 'september',
   'oktober', 'november', 'december'
 );
+
+export const RETRY_MAX_COUNT = 3;
+export const RETRY_DELAY = 10;

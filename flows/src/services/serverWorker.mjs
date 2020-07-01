@@ -9,8 +9,25 @@ import { notify } from '../tasks/trigger.mjs';
 import messenger from '../basics/messenger.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
+const outbox = (message) => {
+  process.send(message);
+};
+
+const inbox = (message) => {
+  switch (message.action) {
+    case ACTION.PING:
+      outbox({ action: ACTION.PONG, payload: { healthTimestamp: Date.now() } });
+      break;
+    default:
+      break;
+  }
+};
+
 const start = () => {
   const processId = process.pid;
+
+  process.on('message', inbox);
+
   const app = new Koa();
   const triggerRouter = new Router();
   const healthRouter = new Router();
@@ -63,6 +80,7 @@ const start = () => {
 
   return app.listen({ port, host }, () => {
     console.log(`${new Date().toISOString()}: Flows listening on ${host}:${port}.`);
+    outbox({ action: ACTION.AVAILABLE });
   });
 };
 

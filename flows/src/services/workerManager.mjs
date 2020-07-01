@@ -70,6 +70,10 @@ export default class {
         }
         console.log('finish', message.payload);
         break;
+      case ACTION.QUEUE_FINAL:
+        this.#_processing.stop();
+        console.log('final');
+        break;
       default:
         break;
     }

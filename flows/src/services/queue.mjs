@@ -82,19 +82,48 @@ export default class Queue {
   };
 
   /**
-   * Mark a queue item as locked, being processed
-   * @param { Number } id The id of the item to be locked
-   */
-  lock = (id) => {
-    const itemId = this.#_queue.findIndex((item) => item.queueId === id);
-    if (itemId !== -1) {
-      this.#_queue[itemId].state = STATE.LOCKED;
-    }
-  }
-
-  /**
    * Get the next item to be processed
    * @param value Not yet implemented
    */
   next = (value) => this.#_generator.next(value);
+
+  /**
+   * Mark a queue item as locked, being processed
+   * @param { Number } id The id of the item to be locked
+   */
+  lock = (id) => {
+    if (typeof id !== 'number') {
+      throw new TypeError('id should be a number');
+    }
+    const itemId = this.#_queue.findIndex((item) => item.queueId === id);
+    if (itemId !== -1 && this.#_queue[itemId].state < STATE.LOCKED) {
+      this.#_queue[itemId].state = STATE.LOCKED;
+    }
+  };
+
+  /**
+   * Mark a queue item for which processing has been finished, as processed
+   * @param { Number } id The id of the item for which the processing has been finished
+   */
+  finish = (id) => {
+    if (typeof id !== 'number') {
+      throw new TypeError('id should be a number');
+    }
+    const itemId = this.#_queue.findIndex((item) => item.queueId === id);
+    if (itemId !== -1 && this.#_queue[itemId].state < STATE.PROCESSED) {
+      this.#_queue[itemId].state = STATE.PROCESSED;
+    }
+    const notFinished = this.#_queue.filter((item) => item.state !== STATE.PROCESSED);
+    if (notFinished.length === 0) {
+      this.#_broadcast(ACTION.QUEUE_FINAL);
+    }
+  };
+
+  /**
+   * Reset the queue
+   */
+  reset = () => {
+    this.#_queue.length = 0;
+    this.#_generator = null;
+  }
 }

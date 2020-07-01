@@ -18,6 +18,7 @@ const convertFile = async (context) => {
   // // .add(addTags)
     .go(context);
   outbox({ action: ACTION.QUEUE_FINISH, payload: { queueId: context.queueId } });
+  outbox({ action: ACTION.AVAILABLE });
 };
 
 const outbox = (message) => {

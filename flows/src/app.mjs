@@ -16,6 +16,7 @@ let isProcessing = false;
 
 const processing = {
   start: () => {
+    console.log('start processing');
     if (isProcessing !== false) {
       return;
     }
@@ -25,6 +26,7 @@ const processing = {
     isProcessing = true;
   },
   stop: () => {
+    console.log('start processing');
     if (isProcessing !== true) {
       return;
     }

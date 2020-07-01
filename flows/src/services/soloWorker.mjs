@@ -17,7 +17,6 @@ const getItem = () => {
     return value;
   }
   return null;
-  //  FIXME: when finished (all tasks) clean Queue => implement in Queue itself?
 };
 
 const outbox = (message) => {
@@ -32,6 +31,16 @@ const inbox = (message) => {
     case ACTION.QUEUE_GET:
       outbox({ action: ACTION.QUEUE_GOT, payload: getItem() });
       break;
+    case ACTION.QUEUE_LOCK:
+      if (message.payload && message.payload.queueId) {
+        queue.lock(message.payload.queueId);
+      }
+      break;
+    case ACTION.QUEUE_FINISH:
+      if (message.payload && message.payload.queueId) {
+        queue.finish(message.payload.queueId);
+      }
+      break;
     default:
       break;
   }
@@ -40,6 +49,9 @@ const inbox = (message) => {
 const queueAction = (action) => {
   switch (action) {
     case ACTION.QUEUE_PROCESS:
+      outbox({ action });
+      break;
+    case ACTION.QUEUE_FINAL:
       outbox({ action });
       break;
     default:

@@ -34,7 +34,8 @@ export const { instance: ACTION, class: ActionEnum } = enumerate(
   new EnumProperties('queue_get', 'get next queue item'),
   new EnumProperties('queue_got', 'got next queue item'),
   new EnumProperties('queue_lock', 'lock queue item'),
-  new EnumProperties('queue_finish', 'finish queue item processing')
+  new EnumProperties('queue_finish', 'finish queue item processing'),
+  new EnumProperties('queue_final', 'queue is final, completely processed')
 );
 
 export const { instance: TIME_UNIT, class: TimeUnitEnum } = enumerate(

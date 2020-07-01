@@ -61,20 +61,19 @@ export default class {
       case ACTION.QUEUE_LOCK:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
         if (foundCandidate) {
-          foundCandidate.worker.send(message);
+          const { action, payload } = message;
+          foundCandidate.worker.send({ action, payload });
         }
-        console.log('lock', message.payload);
         break;
       case ACTION.QUEUE_FINISH:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
         if (foundCandidate) {
-          foundCandidate.worker.send(message);
+          const { action, payload } = message;
+          foundCandidate.worker.send({ action, payload });
         }
-        console.log('finish', message.payload);
         break;
       case ACTION.QUEUE_FINAL:
         this.#_processing.stop();
-        console.log('final');
         break;
       default:
         break;

@@ -227,5 +227,7 @@ export const addTags = async (context, next) => {
 };
 
 export default {
-  getFolderDetails
+  getFolderDetails,
+  checkForExistence,
+  downloadFile
 };

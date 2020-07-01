@@ -5,7 +5,7 @@ import path from 'path';
 import Flow from './flow.mjs';
 import Queue from './queue.mjs';
 import cloud from '../tasks/cloud.mjs';
-import { checkForChanges } from '../tasks/utils.mjs';
+import utils from '../tasks/utils.mjs';
 
 import LastScan from '../basics/lastScan.mjs';
 import { watch as watchConfig, tempFolder } from '../basics/config.mjs';
@@ -34,12 +34,12 @@ const inbox = (message) => {
       outbox({ action: ACTION.QUEUE_GOT, payload: getItem() });
       break;
     case ACTION.QUEUE_LOCK:
-      if (message.payload && message.payload.queueId) {
+      if (message.payload && typeof message.payload.queueId !== 'undefined') {
         queue.lock(message.payload.queueId);
       }
       break;
     case ACTION.QUEUE_FINISH:
-      if (message.payload && message.payload.queueId) {
+      if (message.payload && typeof message.payload.queueId !== 'undefined') {
         queue.finish(message.payload.queueId);
       }
       break;
@@ -101,7 +101,7 @@ const scanLocations = async (locations, lastScan) => {
     };
     await new Flow()
       .add(cloud.getFolderDetails)
-      .add(checkForChanges(lastScan))
+      .add(utils.checkForChanges(lastScan))
       .go(context).catch((error) => {
         console.error(`${new Date().toISOString()}: Worker solo encountered error: ${error}`);
         isError = true;

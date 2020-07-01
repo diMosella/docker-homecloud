@@ -15,13 +15,13 @@ export const { instance: FILE_CATEGORY, class: FileCategoryEnum } = enumerate('m
 export const { instance: WORKER_TYPE, class: WorkerTypeEnum } = enumerate(
   new EnumProperties('server', 'web server worker', !isTest
     ? './src/services/serverWorkerProcess.mjs'
-    : './src/services/serverWorker.spec.sidecar.mjs'),
+    : './src/services/worker.spec.sidecar.mjs'),
   new EnumProperties('solo', 'singleton, sequential worker', !isTest
     ? './src/services/soloWorkerProcess.mjs'
-    : './src/services/soloWorker.spec.sidecar.mjs'),
+    : './src/services/worker.spec.sidecar.mjs'),
   new EnumProperties('converter', 'converting data worker', !isTest
     ? './src/services/converterWorkerProcess.mjs'
-    : './src/services/converterWorker.spec.sidecar.mjs')
+    : './src/services/worker.spec.sidecar.mjs')
 );
 
 export const { instance: STATE, class: StateEnum } = enumerate('queued', 'locked', 'processed');
@@ -70,4 +70,5 @@ export const { instance: MONTH, class: MonthEnum } = enumerate(
 );
 
 export const RETRY_MAX_COUNT = 3;
-export const RETRY_DELAY = 10;
+export const RETRY_DELAY = !isTest ? 10 : 0.1;
+export const QUEUE_DELAY = !isTest ? 10 : 0.1;

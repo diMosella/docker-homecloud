@@ -1,9 +1,7 @@
 'use strict';
 
-import { ACTION, STATE, TIME_UNIT } from '../basics/constants.mjs';
+import { ACTION, QUEUE_DELAY, STATE, TIME_UNIT } from '../basics/constants.mjs';
 import sleeper from '../basics/sleeper.mjs';
-
-const TIMEOUT = 10;
 
 export default class Queue {
   #_queue = [];
@@ -18,7 +16,7 @@ export default class Queue {
    * Create a Queue
    * @param { function } broadcast The method to broadcast actions
    */
-  constructor (broadcast, waitTime = TIMEOUT) {
+  constructor (broadcast, waitTime = QUEUE_DELAY) {
     this.#_broadcast = broadcast;
     this.#_waitTime = waitTime;
     this.#_idGenerator = this.#_idGeneratorFunction();

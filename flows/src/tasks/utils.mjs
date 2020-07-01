@@ -32,7 +32,7 @@ const scanReg = /^SCAN-[a-z]{1}(\d{4})?\.PDF$/i;
 const iPhoneReg = /^IMG_\d{4}\.(JPG|MOV|AAE)$/i;
 const extReg = /\.(JPG|JPEG|PNG|AAE|ARW|MP4|MOV|MTS|PDF)$/i;
 
-export const checkForChanges = (lastScan) => async (context, next) => {
+const checkForChanges = (lastScan) => async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
@@ -151,4 +151,8 @@ export const convert = async (context, next) => {
     await converters[index++](context, next);
   }
   await next();
+};
+
+export default {
+  checkForChanges
 };

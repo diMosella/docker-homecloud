@@ -1,14 +1,17 @@
 'use strict';
 
 import Flow from './flow.mjs';
-import { checkForExistence, downloadFile } from '../tasks/cloud.mjs';
+import cloud from '../tasks/cloud.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
 const convertFile = async (context) => {
+  if (typeof context !== 'object') {
+    throw new TypeError('context must be an object');
+  }
   outbox({ action: ACTION.QUEUE_LOCK, payload: { queueId: context.queueId } });
   await new Flow()
-    .add(checkForExistence)
-    .add(downloadFile)
+    .add(cloud.checkForExistence)
+    .add(cloud.downloadFile)
   //   .add(extractExif)
   //   .add(deriveInfo)
   //   .add(checkForExistence)

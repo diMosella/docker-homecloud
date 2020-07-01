@@ -6,6 +6,7 @@ import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT, STATE } from '../basics/constants.mjs';
 
 const expect = chai.expect;
+const assert = chai.assert;
 
 describe('(Service) queue', () => {
   let isReached = false;
@@ -45,7 +46,19 @@ describe('(Service) queue', () => {
 
     it('public method lock', async () => {
       expect(testQueue.lock).to.be.a('function');
+      assert.throws(testQueue.lock, TypeError);
       testQueue.lock(nextVal.value.queueId);
+    });
+
+    it('public method finish', async () => {
+      expect(testQueue.finish).to.be.a('function');
+      assert.throws(testQueue.finish, TypeError);
+      testQueue.finish(nextVal.value.queueId);
+    });
+
+    it('public method reset', async () => {
+      expect(testQueue.reset).to.be.a('function');
+      testQueue.reset();
     });
   });
 });

@@ -10,9 +10,17 @@ const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {
+  const calls = {
+    start: false,
+    stop: false,
+    isProcessing: false,
+    resetRetry: false
+  };
   const processing = {
-    start: () => {},
-    stop: () => {}
+    start: () => { calls.start = true; },
+    stop: () => { calls.stop = true; },
+    isProcessing: () => { calls.isProcessing = true; return false; },
+    resetRetry: () => { calls.resetRetry = true; }
   };
   let testManager;
 
@@ -46,8 +54,16 @@ describe('(Service) workerManager', () => {
       for (const id in cluster.workers) {
         processRef = cluster.workers[id];
       }
-      processRef.send({ action: ACTION.PING });
+      processRef.send({ action: ACTION.AVAILABLE, shouldEcho: true });
+      processRef.send({ action: ACTION.PING, shouldEcho: true });
+      processRef.send({ action: ACTION.QUEUE_LOCK, payload: { queueId: 0 }, shouldEcho: true });
+      processRef.send({ action: ACTION.QUEUE_PROCESS, shouldEcho: true });
+      processRef.send({ action: ACTION.QUEUE_FINAL, shouldEcho: true });
       await sleeper(0.1, TIME_UNIT.SECOND).sleep;
+      expect(calls.start).to.eql(true);
+      expect(calls.stop).to.eql(true);
+      expect(calls.isProcessing).to.eql(true);
+      expect(calls.resetRetry).to.eql(true);
     });
     it('public method getTypeOf', () => {
       expect(testManager.getTypeOf).to.be.a('function');
@@ -68,6 +84,15 @@ describe('(Service) workerManager', () => {
       }
       testManager.remove(processId);
       expect(testManager.getTypeOf(processId)).to.eql(null);
+    });
+
+    it('public method assignTask', () => {
+      expect(testManager.assignTask).to.be.a('function');
+      let processId;
+      for (const id in cluster.workers) {
+        processId = cluster.workers[id].process.pid;
+      }
+      testManager.assignTask(processId);
     });
   });
 });

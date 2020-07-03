@@ -6,7 +6,7 @@ import path from 'path';
 
 const asyncExec = promisify(execFile);
 
-export const extractExif = async (context, next) => {
+const extractExif = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
@@ -21,5 +21,9 @@ export const extractExif = async (context, next) => {
     return error;
   });
   context.flow.file.exif = isError ? null : JSON.parse(stdout)[0];
-  return await next();
+  await next();
+};
+
+export default {
+  extractExif
 };

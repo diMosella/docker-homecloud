@@ -1,10 +1,10 @@
 'use strict';
 
 import path from 'path';
-import { convert as imageConvert } from './imagemagick.mjs';
-import { convert as rawConvert } from './rawtherapee.mjs';
-import { convert as movieConvert } from './ffmpeg.mjs';
-import { convert as documentConvert } from './tesseract.mjs';
+import { convert as imageConvert } from '../converters/imagemagick.mjs';
+import { convert as rawConvert } from '../converters/rawtherapee.mjs';
+import { convert as movieConvert } from '../converters/ffmpeg.mjs';
+import { convert as documentConvert } from '../converters/tesseract.mjs';
 import { basePaths } from '../basics/config.mjs';
 import { SOURCE, CAMERA, MONTH, FILE_CATEGORY } from '../basics/constants.mjs';
 
@@ -60,10 +60,10 @@ const checkForChanges = (lastScan) => async (context, next) => {
       context.flow.folder.changes.push(detail);
     }
   }
-  return await next();
+  await next();
 };
 
-export const deriveInfo = async (context, next) => {
+const deriveInfo = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
@@ -134,7 +134,7 @@ export const deriveInfo = async (context, next) => {
   await next();
 };
 
-export const convert = async (context, next) => {
+const convert = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
@@ -154,5 +154,7 @@ export const convert = async (context, next) => {
 };
 
 export default {
-  checkForChanges
+  checkForChanges,
+  deriveInfo,
+  convert
 };

@@ -4,14 +4,13 @@ import cron from 'node-cron';
 import path from 'path';
 import Flow from './flow.mjs';
 import Queue from './queue.mjs';
+import Cache from './cache.mjs';
 import cloud from '../tasks/cloud.mjs';
 import utils from '../tasks/utils.mjs';
 
 import LastScan from '../basics/lastScan.mjs';
 import { watch as watchConfig, tempFolder } from '../basics/config.mjs';
 import { ACTION, STATE } from '../basics/constants.mjs';
-
-let isProcessing = false;
 
 const getItem = () => {
   const { value, done } = queue.next();
@@ -26,7 +25,8 @@ const outbox = (message) => {
 };
 
 const inbox = (message) => {
-  switch (message.action) {
+  const { action, payload } = message;
+  switch (action) {
     case ACTION.PING:
       outbox({ action: ACTION.PONG, payload: { healthTimestamp: Date.now() } });
       break;
@@ -34,13 +34,18 @@ const inbox = (message) => {
       outbox({ action: ACTION.QUEUE_GOT, payload: getItem() });
       break;
     case ACTION.QUEUE_LOCK:
-      if (message.payload && typeof message.payload.queueId !== 'undefined') {
-        queue.lock(message.payload.queueId);
+      if (payload && typeof payload.queueId === 'number') {
+        queue.lock(payload.queueId);
       }
       break;
     case ACTION.QUEUE_FINISH:
-      if (message.payload && typeof message.payload.queueId !== 'undefined') {
-        queue.finish(message.payload.queueId);
+      if (payload && typeof payload.queueId === 'number') {
+        queue.finish(payload.queueId);
+      }
+      break;
+    case ACTION.CACHE_GET:
+      if (payload && typeof payload.filePath === 'string') {
+        outbox({ action: ACTION.CACHE_GOT, payload: cache.getByPath(message.payload.filePath) });
       }
       break;
     default:
@@ -51,11 +56,9 @@ const inbox = (message) => {
 const queueAction = (action) => {
   switch (action) {
     case ACTION.QUEUE_PROCESS:
-      isProcessing = true;
       outbox({ action });
       break;
     case ACTION.QUEUE_FINAL:
-      isProcessing = false;
       outbox({ action });
       queue.reset();
       break;
@@ -65,9 +68,14 @@ const queueAction = (action) => {
 };
 
 const queue = new Queue(queueAction);
+const cache = new Cache();
 const taskList = [];
 
 const queueChanges = (changes, location, scanTimestamp) => {
+  if (queue.isProcessing === true) {
+    console.log('already qC');
+    return;
+  }
   for (const change of changes) {
     const filePath = path.resolve(`${location}/${change.name}`);
     queue.push({
@@ -86,12 +94,13 @@ const queueChanges = (changes, location, scanTimestamp) => {
 };
 
 const scanLocations = async (locations, lastScan) => {
-  if (isProcessing === true) {
+  if (queue.isProcessing === true) {
+    console.log('already sL');
     return;
   }
   const scanTimestamp = Date.now();
-  let isError = false;
   for (const location of locations) {
+    let isError = false;
     const context = {
       flow: {
         folder: {

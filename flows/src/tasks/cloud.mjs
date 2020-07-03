@@ -4,9 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import NextcloudClient from 'nextcloud-link';
-import Cache from '../services/cache.mjs';
+import messenger from '../basics/messenger.mjs';
 import { cloud as CloudCredentials } from '../basics/credentials.mjs';
 import { tempFolder } from '../basics/config.mjs';
+import { ACTION, TIME_UNIT } from '../basics/constants.mjs';
 
 const client = new NextcloudClient(CloudCredentials);
 const asyncAccess = promisify(fs.access);
@@ -21,16 +22,23 @@ const existsInternal = async (filePath) => {
   return false;
 };
 
-const existsExternal = async (cloudCache, filePath) => {
-  if (!(cloudCache instanceof Cache)) {
-    throw new TypeError('A cloudCache must be a Cache!');
-  }
+const existsExternal = async (filePath) => {
   if (typeof filePath !== 'string') {
     throw new TypeError('A path must be a string!');
   }
 
-  const inCache = cloudCache.getByPath(filePath);
-  console.log('inCache', inCache);
+  // const inCache = cloudCache.getByPath(filePath);
+  const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { filePath } }, null, 0.2, TIME_UNIT.SECOND)
+    .catch((err) => console.log('no-cache', err));
+  if (inCache && inCache.action === ACTION.CACHE_GOT && inCache.payload !== null) {
+    // foundConverterCandidate.worker.send(task);
+  }
+
+  console.log('inCache', inCache, process.pid);
+
+  if (typeof inCache === 'undefined') {
+    return false;
+  }
 
   switch (typeof inCache) {
     case 'object':
@@ -66,7 +74,7 @@ export const ensureFolderHierarchy = async (cloudCache, folderPath) => {
   const pathParts = folderPath.split('/').filter((part) => part !== '');
   const precedingParts = [];
   for (const nodeName of pathParts) {
-    const parentNode = precedingParts.reduce((accummulator, value) => accummulator[value], cloudCache.get);
+    const parentNode = precedingParts.reduce((accummulator, value) => accummulator[value], cloudCache.all);
     const nodePath = `${precedingParts.length > 0 ? '/' : ''}${precedingParts.join('/')}/${nodeName}`;
     switch (typeof parentNode[nodeName]) {
       case 'undefined':
@@ -101,10 +109,10 @@ const getFolderDetails = async (context, next) => {
   const nodeDetails = parentDetails.find((item) => item.name === nodeName);
   context.flow.folder.lastModified = new Date(nodeDetails.lastModified).valueOf();
   context.flow.folder.details = await client.getFolderFileDetails(location);
-  return await next();
+  await next();
 };
 
-export const checkForExistence = async (context, next) => {
+const checkForExistence = async (context, next) => {
   if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
     throw new TypeError('A context temp path must be of type string!');
   }
@@ -118,7 +126,7 @@ export const checkForExistence = async (context, next) => {
     if (isExisting) {
       return;
     }
-    return await next();
+    await next();
   }
 
   const { pathEdit, nameEdit, pathOrg, nameOrg } = derived;
@@ -129,21 +137,21 @@ export const checkForExistence = async (context, next) => {
   if (isExisting) {
     return;
   }
-  isExisting = await existsExternal(context.flow.cache, `${pathOrg}/${nameOrg}`);
+  isExisting = await existsExternal(`${pathOrg}/${nameOrg}`);
   if (isExisting) {
     return;
   }
 
-  isExisting = await existsExternal(context.flow.cache, `${pathEdit}/${nameEdit}`);
+  isExisting = await existsExternal(`${pathEdit}/${nameEdit}`);
 
   if (isExisting) {
     return;
   }
 
-  return await next();
+  await next();
 };
 
-export const downloadFile = async (context, next) => {
+const downloadFile = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
@@ -162,7 +170,7 @@ export const downloadFile = async (context, next) => {
     return;
   }
 
-  return await next();
+  await next();
 };
 
 export const moveOriginal = async (context, next) => {
@@ -180,7 +188,7 @@ export const moveOriginal = async (context, next) => {
   await client.move(context.flow.file.path, path.resolve(`${pathOrg}/${nameOrg}`)).catch((err) => {
     console.log('move', err);
   });
-  return await next();
+  await next();
 };
 
 export const uploadEdit = async (context, next) => {
@@ -197,11 +205,11 @@ export const uploadEdit = async (context, next) => {
   await client.uploadFromStream(path.resolve(`${pathEdit}/${nameEdit}`), fs.createReadStream(tempPathEdit)).catch((err) => {
     console.log('upload edit', err);
   });
-  return await next();
+  await next();
 };
 
 const getTag = async (tagLabel) => {
-  return await client.put('/remote.php/dav/systemtags/', JSON.stringify({
+  await client.put('/remote.php/dav/systemtags/', JSON.stringify({
     name: tagLabel,
     userVisible: true,
     userAssignable: true,

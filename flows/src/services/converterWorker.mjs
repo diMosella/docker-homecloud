@@ -2,6 +2,8 @@
 
 import Flow from './flow.mjs';
 import cloud from '../tasks/cloud.mjs';
+import exif from '../tasks/exif.mjs';
+import utils from '../tasks/utils.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
 const convertFile = async (context) => {
@@ -12,9 +14,9 @@ const convertFile = async (context) => {
   await new Flow()
     .add(cloud.checkForExistence)
     .add(cloud.downloadFile)
-  //   .add(extractExif)
-  //   .add(deriveInfo)
-  //   .add(checkForExistence)
+    .add(exif.extractExif)
+    .add(utils.deriveInfo)
+    .add(cloud.checkForExistence)
   //   .add(convert)
   //   .add(moveOriginal)
   //   .add(uploadEdit)

@@ -9,6 +9,7 @@ export default class Queue {
   #_generator;
   #_idGenerator;
   #_isInterrupting = false;
+  #_isProcessing = false;
   #_broadcast;
   #_waitTime;
 
@@ -35,11 +36,14 @@ export default class Queue {
     this.#_isInterrupting = false;
   };
 
-  #_generatorFunction = function* (queue = this.#_queue) {
-    let index = 0;
-    for (index in queue) {
-      if (queue[index].state === STATE.QUEUED) {
-        yield queue[index++];
+  #_generatorFunction = function* () {
+    let index;
+    for (let retryCounter = 0; retryCounter < 2; retryCounter++) {
+      index = 0;
+      for (index in this.#_queue) {
+        if (this.#_queue[index].state === STATE.QUEUED) {
+          yield this.#_queue[index++];
+        }
       }
     }
   };
@@ -55,8 +59,8 @@ export default class Queue {
    * Add an item to the queue, and when no new items arrive, start the processing
    * @param { Object } itemPayload
    */
-  push = async (itemPayload) => {
-    if (!itemPayload) {
+  async push (itemPayload) {
+    if (!itemPayload || this.#_isProcessing === true) {
       return;
     }
     this.#_queue.push(Object.assign({}, itemPayload, { queueId: this.#_idGenerator.next().value, state: STATE.QUEUED }));
@@ -75,7 +79,8 @@ export default class Queue {
 
     if (this.#_queue.length === queueSize) {
       this.#_generator = this.#_generatorFunction();
-      this.#_broadcast(ACTION.QUEUE_PROCESS)
+      this.#_broadcast(ACTION.QUEUE_PROCESS);
+      this.#_isProcessing = true;
     }
   };
 
@@ -83,13 +88,17 @@ export default class Queue {
    * Get the next item to be processed
    * @param value Not yet implemented
    */
-  next = (value) => this.#_generator.next(value);
+  next (value) {
+    return this.#_generator !== null
+      ? this.#_generator.next(value)
+      : { done: true };
+  };
 
   /**
    * Mark a queue item as locked, being processed
    * @param { Number } id The id of the item to be locked
    */
-  lock = (id) => {
+  lock (id) {
     if (typeof id !== 'number') {
       throw new TypeError('id should be a number');
     }
@@ -99,11 +108,15 @@ export default class Queue {
     }
   };
 
+  get isProcessing () {
+    return this.#_isProcessing;
+  }
+
   /**
    * Mark a queue item for which processing has been finished, as processed
    * @param { Number } id The id of the item for which the processing has been finished
    */
-  finish = (id) => {
+  finish (id) {
     if (typeof id !== 'number') {
       throw new TypeError('id should be a number');
     }
@@ -112,15 +125,17 @@ export default class Queue {
       this.#_queue[itemId].state = STATE.PROCESSED;
     }
     const notFinished = this.#_queue.filter((item) => item.state !== STATE.PROCESSED);
+    console.log('finish', id, notFinished.map((item) => ({ queueId: item.queueId, state: item.state, path: item.flow.file.path })));
     if (notFinished.length === 0) {
       this.#_broadcast(ACTION.QUEUE_FINAL);
+      this.#_isProcessing = false;
     }
   };
 
   /**
    * Reset the queue
    */
-  reset = () => {
+  reset () {
     this.#_queue.length = 0;
     this.#_generator = null;
   }

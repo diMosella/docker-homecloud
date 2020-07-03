@@ -15,7 +15,7 @@ describe('(Basics) enum', () => {
     it('which returns a frozen object', () => {
       expect(testEnum).to.be.a('object');
       expect(testEnum).to.be.an.instanceof(Enum);
-      expect(Object.isFrozen(testEnum)).to.eql(true);
+      assert.ok(Object.isFrozen(testEnum));
     });
     it('which should have a method findBy', () => {
       expect(testEnum.findBy).to.be.a('function');
@@ -67,7 +67,7 @@ describe('(Basics) enum', () => {
       assert.throws(() => testEnum.getProperty(0), TypeError);
       expect(testEnum.getProperty(0, 'code')).to.eql('TestCode');
       expect(testEnum.getProperty('TEST_ITEM', 'label')).to.eql('TestLabel');
-      expect(testEnum.getProperty('ITEM', 'label')).to.eql(null);
+      assert.isNull(testEnum.getProperty('ITEM', 'label'));
     });
   });
 });

@@ -16,18 +16,18 @@ describe('(Service) cache', () => {
 
   describe('should have', () => {
     it('public getter', () => {
-      expect(testCache.get).to.be.a('object');
-      expect(testCache.get).to.eql({});
+      expect(testCache.all).to.be.a('object');
+      assert.isEmpty(testCache.all);
     });
     it('public method set', () => {
       expect(testCache.set).to.be.a('function');
       assert.throws(testCache.set, TypeError);
       testCache.set('/arbitrairy/path/to/cache', false);
-      expect(testCache.get).to.eql({ arbitrairy: { path: { to: { cache: false } } } });
+      expect(testCache.all).to.eql({ arbitrairy: { path: { to: { cache: false } } } });
       testCache.set('/arbitrairy/path/to/cache', true);
-      expect(testCache.get).to.eql({ arbitrairy: { path: { to: { cache: true } } } });
+      expect(testCache.all).to.eql({ arbitrairy: { path: { to: { cache: true } } } });
       testCache.set('/arbitrairy/path/1/another', false);
-      expect(testCache.get).to.eql({ arbitrairy: { path: { to: { cache: true }, 1: { another: false } } } });
+      expect(testCache.all).to.eql({ arbitrairy: { path: { to: { cache: true }, 1: { another: false } } } });
     });
     it('public method getByPath', () => {
       expect(testCache.getByPath).to.be.a('function');

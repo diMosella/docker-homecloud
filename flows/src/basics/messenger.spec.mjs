@@ -7,6 +7,7 @@ import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';
 
 const expect = chai.expect;
+const assert = chai.assert;
 
 describe('(Basics) messenger', () => {
   let childProcess;
@@ -65,7 +66,7 @@ describe('(Basics) messenger', () => {
           break;
         case 'type':
           expect(msg.value).to.eql('object');
-          expect(msg.isPromise).to.eql(true);
+          assert.ok(msg.isPromise);
           toCheck.type = true;
           break;
         case 'response':

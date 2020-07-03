@@ -1,6 +1,7 @@
 'use strict';
 
 import chai from 'chai';
+import sinon from 'sinon';
 import cluster from 'cluster';
 import WorkerManager from './workerManager.mjs';
 import sleeper from '../basics/sleeper.mjs';
@@ -10,21 +11,20 @@ const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {
-  const calls = {
-    start: false,
-    stop: false,
-    isProcessing: false,
-    resetRetry: false
-  };
+  const startStub = sinon.fake();
+  const stopStub = sinon.fake();
+  const isProcessingStub = sinon.fake.returns(false);
+  const resetRetryStub = sinon.fake();
   const processing = {
-    start: () => { calls.start = true; },
-    stop: () => { calls.stop = true; },
-    isProcessing: () => { calls.isProcessing = true; return false; },
-    resetRetry: () => { calls.resetRetry = true; }
+    start: startStub,
+    stop: stopStub,
+    isProcessing: isProcessingStub,
+    resetRetry: resetRetryStub
   };
   let testManager;
 
   after(() => {
+    sinon.restore();
     for (const id in cluster.workers) {
       cluster.workers[id].kill();
     }
@@ -46,7 +46,7 @@ describe('(Service) workerManager', () => {
       assert.throws(testManager.add, TypeError);
       assert.throws(() => testManager.add(17), TypeError);
       testManager.add(WORKER_TYPE.SOLO);
-      await sleeper(0.1, TIME_UNIT.SECOND).sleep;
+      await sleeper(0.2, TIME_UNIT.SECOND).sleep;
       assert.throws(() => testManager.add(WORKER_TYPE.SOLO), Error);
     });
     it('adds message event handler', async () => {
@@ -60,10 +60,10 @@ describe('(Service) workerManager', () => {
       processRef.send({ action: ACTION.QUEUE_PROCESS, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_FINAL, shouldEcho: true });
       await sleeper(0.1, TIME_UNIT.SECOND).sleep;
-      expect(calls.start).to.eql(true);
-      expect(calls.stop).to.eql(true);
-      expect(calls.isProcessing).to.eql(true);
-      expect(calls.resetRetry).to.eql(true);
+      assert.ok(startStub.calledOnce);
+      assert.ok(stopStub.calledOnce);
+      assert.ok(isProcessingStub.calledOnce);
+      assert.ok(resetRetryStub.calledOnce);
     });
     it('public method getTypeOf', () => {
       expect(testManager.getTypeOf).to.be.a('function');

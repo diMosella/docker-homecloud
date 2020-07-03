@@ -9,6 +9,7 @@ import { ACTION, TIME_UNIT } from '../basics/constants.mjs';
 
 chai.use(chaiHTTP);
 const expect = chai.expect;
+const assert = chai.assert;
 const request = chai.request;
 const { start } = serverWorker;
 
@@ -18,11 +19,10 @@ describe('(Service) serverWorker.start', () => {
   });
 
   describe('which should start a http server', () => {
-    const receivedMessages = [];
     const originalSend = process.send;
     let testWorker;
 
-    const sendStub = (message, skip = false) => !skip && receivedMessages.push(message);
+    const sendStub = sinon.fake();
 
     after(() => {
       sinon.restore();
@@ -37,7 +37,7 @@ describe('(Service) serverWorker.start', () => {
       process.send = sendStub;
       testWorker = start();
       await sleeper(0.1, TIME_UNIT.SECOND).sleep;
-      expect(receivedMessages.filter((item) => item.action === ACTION.AVAILABLE)).to.have.length(1);
+      assert.ok(sendStub.calledOnceWithExactly({ action: ACTION.AVAILABLE }));
       const response = await request(testWorker)
         .get('/index.json');
       expect(response.statusCode).to.eql(200);

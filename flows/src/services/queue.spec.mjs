@@ -1,6 +1,7 @@
 'use strict';
 
 import chai from 'chai';
+import sinon from 'sinon';
 import Queue from './queue.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT, STATE } from '../basics/constants.mjs';
@@ -9,9 +10,8 @@ const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Service) queue', () => {
-  let isReached = false;
-  const callback = () => { isReached = true; };
-  const testQueue = new Queue(callback, 0.1);
+  const callbackStub = sinon.fake((msg) => { });
+  const testQueue = new Queue(callbackStub, 0.1);
 
   it('should be a class.', () => {
     expect(testQueue).to.be.a('object');
@@ -23,7 +23,7 @@ describe('(Service) queue', () => {
       expect(testQueue.push).to.be.a('function');
       testQueue.push({ test: true });
       await sleeper(0.2, TIME_UNIT.SECOND).sleep;
-      expect(isReached).to.eql(true);
+      assert.ok(callbackStub.calledOnce);
     });
 
     let nextVal;

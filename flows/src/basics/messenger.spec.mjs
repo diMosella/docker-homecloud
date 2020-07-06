@@ -17,7 +17,7 @@ describe('(Basics) messenger', () => {
   });
   it('should return a promise (to childProcess)', async () => {
     childProcess = fork('src/basics/messenger.spec.sidecar.mjs');
-    await sleeper(0.1, TIME_UNIT.SECOND).sleep;
+    await sleeper(0.15, TIME_UNIT.SECOND).sleep;
     const transporter = messenger({ type: 'request' }, childProcess);
     expect(transporter).to.be.a('promise');
     const response = await transporter;
@@ -25,7 +25,7 @@ describe('(Basics) messenger', () => {
   });
   it('should be able to reject (to childProcess)', async () => {
     childProcess = fork('src/basics/messenger.spec.sidecar.mjs');
-    await sleeper(0.1, TIME_UNIT.SECOND).sleep;
+    await sleeper(0.15, TIME_UNIT.SECOND).sleep;
     const transporter = messenger({ type: 'ping' }, childProcess);
     expect(transporter).to.be.a('promise');
     await transporter.catch((err) => {

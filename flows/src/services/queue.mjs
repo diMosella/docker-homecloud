@@ -125,7 +125,6 @@ export default class Queue {
       this.#_queue[itemId].state = STATE.PROCESSED;
     }
     const notFinished = this.#_queue.filter((item) => item.state !== STATE.PROCESSED);
-    console.log('finish', id, notFinished.map((item) => ({ queueId: item.queueId, state: item.state, path: item.flow.file.path })));
     if (notFinished.length === 0) {
       this.#_broadcast(ACTION.QUEUE_FINAL);
       this.#_isProcessing = false;

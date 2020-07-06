@@ -15,33 +15,22 @@ const start = () => {
 
   const cpuCount = cpus().length;
   const retries = Object.values(WORKER_TYPE).reduce((acumm, type) => Object.assign(acumm, { [type]: 0 }), {});
-  let isProcessing = false;
 
-  const processing = {
-    start: () => {
-      if (isProcessing !== false) {
-        return;
-      }
+  const processes = {
+    addConverters: () => {
       for (let i = 0; i < cpuCount; i++) {
         workerManager.add(WORKER_TYPE.CONVERTER);
       }
-      isProcessing = true;
     },
-    stop: () => {
-      if (isProcessing !== true) {
-        return;
-      }
+    removeConverters: () => {
       for (const id in cluster.workers) {
         const worker = cluster.workers[id];
         const processId = worker.process.pid;
         if (workerManager.getTypeOf(processId) === WORKER_TYPE.CONVERTER) {
-          worker.kill();
           workerManager.remove(processId);
         }
       }
-      isProcessing = false;
     },
-    isProcessing: () => isProcessing,
     resetRetry: async (type) => {
       if (!(type in Object.values(WORKER_TYPE))) {
         throw new TypeError('type should be in WorkerTypeEnum');
@@ -51,7 +40,7 @@ const start = () => {
     }
   };
 
-  const workerManager = new WorkerManager(processing);
+  const workerManager = new WorkerManager(processes);
 
   workerManager.add(WORKER_TYPE.SOLO);
   workerManager.add(WORKER_TYPE.SERVER);
@@ -62,6 +51,10 @@ const start = () => {
 
   cluster.on('exit', (worker, code, signal) => {
     let isCausedByError = false;
+    for (const id in cluster.workers) {
+      const processId = cluster.workers[id].process.pid;
+      console.log('remaining', processId, WORKER_TYPE.getProperty(workerManager.getTypeOf(processId), 'label'));
+    }
     if (signal) {
       console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} was killed by signal: ${signal}`);
     } else if (code !== 0) {
@@ -77,9 +70,8 @@ const start = () => {
       return;
     }
 
-    if (retries[type] < RETRY_MAX_COUNT) {
+    if (retries[type]++ < RETRY_MAX_COUNT) {
       workerManager.add(type);
-      retries[type]++;
     }
   });
 };

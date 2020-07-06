@@ -31,10 +31,10 @@ describe('(App) app.start', () => {
   it('should be a function', () => {
     expect(app.start).to.be.a('function');
     app.start();
-    expect(addStub.callCount).to.eql(2);
-    assert.ok(addStub.getCall(0).firstArg === WORKER_TYPE.SOLO);
-    assert.ok(addStub.getCall(1).firstArg === WORKER_TYPE.SERVER);
-    assert.notOk(getTypeOfStub.called);
-    assert.notOk(removeStub.called);
+    assert.equal(addStub.callCount, 2);
+    assert.equal(addStub.getCall(0).firstArg, WORKER_TYPE.SOLO);
+    assert.equal(addStub.getCall(1).firstArg, WORKER_TYPE.SERVER);
+    assert.equal(getTypeOfStub.callCount, 0);
+    assert.equal(removeStub.callCount, 0);
   });
 });

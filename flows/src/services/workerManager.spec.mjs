@@ -11,14 +11,12 @@ const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {
-  const startStub = sinon.fake();
-  const stopStub = sinon.fake();
-  const isProcessingStub = sinon.fake.returns(false);
+  const addConvertersStub = sinon.fake();
+  const removeConvertersStub = sinon.fake();
   const resetRetryStub = sinon.fake();
-  const processing = {
-    start: startStub,
-    stop: stopStub,
-    isProcessing: isProcessingStub,
+  const processes = {
+    addConverters: addConvertersStub,
+    removeConverters: removeConvertersStub,
     resetRetry: resetRetryStub
   };
   let testManager;
@@ -35,7 +33,7 @@ describe('(Service) workerManager', () => {
   });
 
   it('should be a class.', () => {
-    testManager = new WorkerManager(processing);
+    testManager = new WorkerManager(processes);
     expect(testManager).to.be.a('object');
     expect(testManager).to.be.an.instanceof(WorkerManager);
   });
@@ -57,13 +55,14 @@ describe('(Service) workerManager', () => {
       processRef.send({ action: ACTION.AVAILABLE, shouldEcho: true });
       processRef.send({ action: ACTION.PING, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_LOCK, payload: { queueId: 0 }, shouldEcho: true });
+      processRef.send({ action: ACTION.QUEUE_FINISH, payload: { queueId: 0 }, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_PROCESS, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_FINAL, shouldEcho: true });
+      processRef.send({ action: ACTION.CACHE_GET, shouldEcho: true });
       await sleeper(0.1, TIME_UNIT.SECOND).sleep;
-      assert.ok(startStub.calledOnce);
-      assert.ok(stopStub.calledOnce);
-      assert.ok(isProcessingStub.calledOnce);
-      assert.ok(resetRetryStub.calledOnce);
+      assert.equal(addConvertersStub.callCount, 1);
+      assert.equal(removeConvertersStub.callCount, 1);
+      assert.equal(resetRetryStub.callCount, 1);
     });
     it('public method getTypeOf', () => {
       expect(testManager.getTypeOf).to.be.a('function');
@@ -76,6 +75,15 @@ describe('(Service) workerManager', () => {
       expect(count).to.eql(1);
     });
 
+    it('public method assignTask', () => {
+      expect(testManager.assignTask).to.be.a('function');
+      let processId;
+      for (const id in cluster.workers) {
+        processId = cluster.workers[id].process.pid;
+      }
+      testManager.assignTask(processId);
+    });
+
     it('public method remove', () => {
       expect(testManager.remove).to.be.a('function');
       let processId;
@@ -84,15 +92,6 @@ describe('(Service) workerManager', () => {
       }
       testManager.remove(processId);
       expect(testManager.getTypeOf(processId)).to.eql(null);
-    });
-
-    it('public method assignTask', () => {
-      expect(testManager.assignTask).to.be.a('function');
-      let processId;
-      for (const id in cluster.workers) {
-        processId = cluster.workers[id].process.pid;
-      }
-      testManager.assignTask(processId);
     });
   });
 });

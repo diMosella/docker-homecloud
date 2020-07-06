@@ -2,17 +2,14 @@
 
 import cluster from 'cluster';
 import messenger from '../basics/messenger.mjs';
+import Sequencer from './sequencer.mjs';
 import { ACTION, WORKER_TYPE } from '../basics/constants.mjs';
-import { resolve } from 'path';
 
 if (!cluster.isMaster) {
   throw new Error('This workerManager should be run as non-worker process');
 }
 
 const createWorker = (type) => {
-  if (!(type in Object.values(WORKER_TYPE))) {
-    throw new TypeError('type should be in WorkerTypeEnum');
-  }
   const exec = WORKER_TYPE.getProperty(type, 'code');
   console.log(`${new Date().toISOString()}: Starting a new ${WORKER_TYPE.getProperty(type, 'label')}`);
   cluster.setupMaster({
@@ -23,28 +20,16 @@ const createWorker = (type) => {
 
 export default class {
   #_workers = []; // eslint-disable-line
-  #_processing;
-  #_synchronizer = null;
+  #_processes;
+  #_isProcessing = false;
+  #_sequencer = new Sequencer();
 
-  constructor (processing) {
-    if (typeof processing !== 'object' || typeof processing.start !== 'function' || typeof processing.stop !== 'function') {
-      throw new TypeError('processing should be an object with start and stop functions');
+  constructor (processes) {
+    if (typeof processes !== 'object' || typeof processes.addConverters !== 'function' || typeof processes.removeConverters !== 'function') {
+      throw new TypeError('processes should be an object with addConverters and removeConverters functions');
     }
-    this.#_processing = processing;
+    this.#_processes = processes;
   }
-
-  #_createSerializer = () => {
-    let _resolve = null;
-    return {
-      previous: new Promise((resolve) => {
-        _resolve = resolve;
-      }),
-      next: () => {
-        _resolve();
-        this.#_synchronizer = null;
-      }
-    };
-  };
 
   /**
    * MessageHandler
@@ -61,10 +46,10 @@ export default class {
     switch (action) {
       case ACTION.AVAILABLE:
         const type = this.getTypeOf(processId);
-        if (this.#_processing.isProcessing() === true && type === WORKER_TYPE.CONVERTER) {
+        if (this.#_isProcessing === true && type === WORKER_TYPE.CONVERTER) {
           this.assignTask(processId);
         }
-        this.#_processing.resetRetry(type);
+        this.#_processes.resetRetry(type);
         break;
       case ACTION.PING:
         foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);
@@ -73,7 +58,11 @@ export default class {
         }
         break;
       case ACTION.QUEUE_PROCESS:
-        this.#_processing.start();
+        if (this.#_isProcessing === true) {
+          break;
+        }
+        this.#_processes.addConverters();
+        this.#_isProcessing = true;
         break;
       case ACTION.QUEUE_LOCK:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
@@ -88,7 +77,11 @@ export default class {
         }
         break;
       case ACTION.QUEUE_FINAL:
-        this.#_processing.stop();
+        if (this.#_isProcessing === false) {
+          break;
+        }
+        this.#_processes.removeConverters();
+        this.#_isProcessing = false;
         break;
       case ACTION.CACHE_GET:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
@@ -127,6 +120,7 @@ export default class {
     if (candidateIndex !== -1) {
       const removedCandidate = this.#_workers.splice(candidateIndex, 1)[0];
       removedCandidate.worker.removeListener('message', removedCandidate.messageBus);
+      removedCandidate.worker.kill();
     }
   };
 
@@ -144,18 +138,10 @@ export default class {
     if (!foundSoloCandidate || !foundConverterCandidate) {
       return false;
     }
-    if (this.#_synchronizer && this.#_synchronizer.previous instanceof Promise) {
-      console.log('ser')
-      await this.#_synchronizer.previous;
-    } else {
-      console.log('no-ser');
-    }
-
-    this.#_synchronizer = this.#_createSerializer();
+    await this.#_sequencer.start();
     const task = await messenger({ action: ACTION.QUEUE_GET }, foundSoloCandidate.worker).catch((err) => console.log('no-task', err));
-    this.#_synchronizer.next();
+    this.#_sequencer.done();
     if (task && task.action === ACTION.QUEUE_GOT && task.payload !== null) {
-      // FIXME: multiple parallel assignTasks yields same file being handled twice and others not
       foundConverterCandidate.worker.send(task);
     }
   };

@@ -21,16 +21,17 @@ describe('(Service) queue', () => {
   describe('should have', () => {
     it('public method push', async () => {
       expect(testQueue.push).to.be.a('function');
-      testQueue.push({ test: true });
+      await testQueue.push({ test: true });
+      await testQueue.push({ test: true, isSecond: true });
       await sleeper(0.2, TIME_UNIT.SECOND).sleep;
-      assert.ok(callbackStub.calledOnce);
+      assert.equal(callbackStub.callCount, 1);
     });
 
     let nextVal;
     it('public method next', () => {
       expect(testQueue.next).to.be.a('function');
       nextVal = testQueue.next();
-      expect(nextVal).to.eql({
+      assert.deepEqual(nextVal, {
         done: false,
         value: {
           queueId: 0,
@@ -38,7 +39,9 @@ describe('(Service) queue', () => {
           test: true
         }
       });
-      expect(testQueue.next()).to.eql({
+      testQueue.next();
+      testQueue.next();
+      assert.deepEqual(testQueue.next(), {
         done: true,
         value: undefined
       });

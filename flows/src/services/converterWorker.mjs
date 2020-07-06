@@ -2,7 +2,7 @@
 
 import Flow from './flow.mjs';
 import cloud from '../tasks/cloud.mjs';
-import exif from '../tasks/exif.mjs';
+import exif from '../converters/exif.mjs';
 import utils from '../tasks/utils.mjs';
 import { ACTION } from '../basics/constants.mjs';
 

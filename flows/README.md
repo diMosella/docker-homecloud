@@ -12,6 +12,18 @@
 3. Generators (JS, to control maximum filehandles)
 4. ffmpeg (webm / vpx)
 
+## FFmpeg
+
+- See: https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Video_codecs#Choosing_a_video_codec
+
+
+## Imagemagick
+
+- Auto improve images
+- Set ``-define dng:use-camera-wb=true`` to use the RAW-embedded color profile for Sony cameras. You can also set these options: use-auto-wb, use-auto-bright, and output-color
+- ``magick /home/wim/temp/DSC09670.ARW -define "dng:use-camera-wb=true dng:use-auto-bright=true" -auto-gamma -auto-level -normalize /home/wim/temp/jpg/DSC09670-im.jpg``
+
+
 ## Text recoginition in scanned pdfs
 
 - OCR, tesseract.js

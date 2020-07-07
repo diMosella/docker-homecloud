@@ -27,31 +27,28 @@ const existsExternal = async (filePath) => {
     throw new TypeError('A path must be a string!');
   }
 
-  // const inCache = cloudCache.getByPath(filePath);
   const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { filePath } }, null, 0.2, TIME_UNIT.SECOND)
     .catch((err) => console.log('no-cache', err));
-  if (inCache && inCache.action === ACTION.CACHE_GOT && inCache.payload !== null) {
-    // foundConverterCandidate.worker.send(task);
+  if (!inCache || inCache.action !== ACTION.CACHE_GOT || inCache.payload === null) {
+    if (!(await client.exists(path.resolve(filePath)))) {
+      return false;
+    }
+    process.send({ action: ACTION.CACHE_SET, payload: { filePath, value: true } });
+    return true;
   }
 
   console.log('inCache', inCache, process.pid);
 
-  if (typeof inCache === 'undefined') {
-    return false;
-  }
-
-  switch (typeof inCache) {
+  switch (typeof inCache.payload) {
     case 'object':
-      if (inCache === null) {
-        if (!(await client.exists(path.resolve(filePath)))) {
-          return false;
-        }
-        cloudCache.set(filePath, true);
-      }
       return true;
     case 'boolean':
-      if (!inCache) {
-        await cloudCache.listen(filePath);
+      if (!inCache.payload) {
+        const nowInCache = await messenger({ action: ACTION.CACHE_LISTEN, payload: { filePath } }, null, 1, TIME_UNIT.SECOND)
+          .catch((err) => console.log('no-cache', err));
+        if (!nowInCache || inCache.action !== ACTION.CACHE_HEARD || inCache.payload === null) {
+          return false;
+        }
       }
       return true;
     default:
@@ -98,7 +95,7 @@ const getFolderDetails = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || typeof context.flow.folder.location !== 'string') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || typeof context.flow.folder.location !== 'string') {
     throw new TypeError('A context flow must contain a folder location of type string!');
   }
   const { location } = context.flow.folder;
@@ -113,7 +110,7 @@ const getFolderDetails = async (context, next) => {
 };
 
 const checkForExistence = async (context, next) => {
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
     throw new TypeError('A context temp path must be of type string!');
   }
 
@@ -126,7 +123,7 @@ const checkForExistence = async (context, next) => {
     if (isExisting) {
       return;
     }
-    await next();
+    return await next();
   }
 
   const { pathEdit, nameEdit, pathOrg, nameOrg } = derived;
@@ -155,7 +152,7 @@ const downloadFile = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
     throw new TypeError('A download context path must be of type string!');
   }
   await client.checkConnectivity();
@@ -177,7 +174,7 @@ export const moveOriginal = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.path !== 'string') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.path !== 'string') {
     throw new TypeError('A file path must be of type string!');
   }
   await client.checkConnectivity();
@@ -195,7 +192,7 @@ export const uploadEdit = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
     throw new Error('The file derived info must be set!');
   }
   await client.checkConnectivity();
@@ -223,7 +220,7 @@ export const addTags = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
     throw new Error('The file derived info must be set!');
   }
   await client.checkConnectivity();

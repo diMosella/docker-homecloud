@@ -1,29 +1,27 @@
 'use strict';
 
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import path from 'path';
+import asyncSys from './asyncSys.mjs';
 
-const asyncExec = promisify(execFile);
-
-const extractExif = async (context, next) => {
+const extract = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('next should be a function'));
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
-    throw new TypeError('A context temp path must be of type string!');
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+    return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
-  let isError = false;
-  const { stdout } = await asyncExec('exiftool', ['-j', '-a', path.resolve(context.flow.file.tempPathOrg)]).catch(error => {
-    console.log('error:', error);
-    isError = true;
-    return error;
-  });
-  context.flow.file.exif = isError ? null : JSON.parse(stdout)[0];
-  await next();
+  context.flow.call = {
+    exec: 'exiftools',
+    options: ['-j', '-a', path.resolve(context.flow.file.tempPathOrg)],
+    onSuccess: (outLog) => {
+      context.flow.file.exif = JSON.parse(outLog)[0];
+      return Promise.resolve();
+    }
+  };
+  await asyncSys.call(context, next);
 };
 
 export default {
-  extractExif
+  extract
 };

@@ -30,7 +30,7 @@ describe('(Service) converterWorker.start', () => {
     const downloadFileStub = sinon.fake(async (context, next) => {
       await next();
     });
-    const extractExifStub = sinon.fake(async (context, next) => {
+    const extractStub = sinon.fake(async (context, next) => {
       await next();
     });
     const deriveInfoStub = sinon.fake(async (context, next) => {
@@ -41,7 +41,7 @@ describe('(Service) converterWorker.start', () => {
     before(() => {
       sinon.replace(cloud, 'checkForExistence', checkForExistenceStub);
       sinon.replace(cloud, 'downloadFile', downloadFileStub);
-      sinon.replace(exif, 'extractExif', extractExifStub);
+      sinon.replace(exif, 'extract', extractStub);
       sinon.replace(utils, 'deriveInfo', deriveInfoStub);
       process.send = sendStub;
     });
@@ -60,7 +60,7 @@ describe('(Service) converterWorker.start', () => {
       await sleeper(0.15, TIME_UNIT.SECOND).sleep;
       assert.equal(checkForExistenceStub.callCount, 2);
       assert.equal(downloadFileStub.callCount, 1);
-      assert.equal(extractExifStub.callCount, 1);
+      assert.equal(extractStub.callCount, 1);
       assert.equal(deriveInfoStub.callCount, 1);
       assert.equal(sendStub.callCount, 5);
       assert.strictEqual(sendStub.getCall(0).firstArg.action, ACTION.AVAILABLE);

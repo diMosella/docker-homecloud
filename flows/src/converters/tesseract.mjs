@@ -1,15 +1,15 @@
 'use strict';
 
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import path from 'path';
+import asyncSys from './asyncSys.mjs';
 import { tempFolder } from '../basics/config.mjs';
 
-const asyncExec = promisify(execFile);
-
-export const convert = async (context) => {
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
-    throw new TypeError('A context temp path must be of type string!');
+const convert = async (context, next) => {
+  if (typeof next !== 'function') {
+    return Promise.reject(new TypeError('next should be a function'));
+  }
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+    return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
   const { tempPathOrg, derived } = context.flow.file;
@@ -17,19 +17,17 @@ export const convert = async (context) => {
 
   const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
 
-  const options = ['--rotate-pages', '--deskew', '-l', 'nld+eng', '--clean'];
+  context.flow.call = {
+    exec: 'ocrmypdf',
+    options: ['--rotate-pages', '--deskew', '-l', 'nld+eng', '--clean', path.resolve(tempPathOrg), tempPathEdit],
+    onSuccess: (_outLog) => {
+      context.flow.file.tempPathEdit = tempPathEdit;
+      return Promise.resolve();
+    }
+  };
+  await asyncSys.call(context, next);
+};
 
-  let isError = false;
-  await asyncExec('ocrmypdf',
-    [...options, path.resolve(tempPathOrg), tempPathEdit]
-  ).catch(error => {
-    console.log('error:', error);
-    isError = true;
-    return error;
-  });
-
-  if (isError) {
-    return;
-  }
-  context.flow.file.tempPathEdit = tempPathEdit;
+export default {
+  convert
 };

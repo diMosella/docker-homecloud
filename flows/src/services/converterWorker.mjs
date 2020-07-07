@@ -14,7 +14,7 @@ const convertFile = async (context) => {
   await new Flow()
     .add(cloud.checkForExistence)
     .add(cloud.downloadFile)
-    .add(exif.extractExif)
+    .add(exif.extract)
     .add(utils.deriveInfo)
     .add(cloud.checkForExistence)
   //   .add(convert)

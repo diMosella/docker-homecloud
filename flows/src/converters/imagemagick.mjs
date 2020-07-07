@@ -1,50 +1,46 @@
 'use strict';
 
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
+import { promisify } from 'util';
+import asyncSys from './asyncSys.mjs';
 import { tempFolder } from '../basics/config.mjs';
 
-const asyncExec = promisify(execFile);
+const asyncUnlink = promisify(fs.unlink);
 
-export const convert = async (context) => {
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
-    throw new TypeError('A context temp path must be of type string!');
+const convert = async (context, next) => {
+  if (typeof next !== 'function') {
+    return Promise.reject(new TypeError('next should be a function'));
+  }
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+    return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
   const { tempPathOrg, tempPathIntermediate, derived } = context.flow.file;
-  const { nameEdit, editExtension } = derived;
+  const { nameEdit } = derived;
 
-  const isPDF = editExtension === 'pdf';
-
-  const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}${isPDF ? '.tif' : ''}`);
+  const tempPathEdit = path.resolve(`${tempFolder}/${nameEdit}`);
   const original = tempPathIntermediate || tempPathOrg;
-  const options = isPDF
-    ? ['-density', '200', '-resize', '2490x3510']
-    : ['-auto-gamma', '-auto-level', '-normalize'];
 
-  let isError = false;
-  await asyncExec('convert',
-    [path.resolve(original), ...options, tempPathEdit]
-  ).catch(error => {
-    console.log('error:', error);
-    isError = true;
-    return error;
-  });
+  const clean = async () => {
+    if (tempPathIntermediate) {
+      return await asyncUnlink(path.resolve(tempPathIntermediate))
+        .catch((_error) => Promise.resolve());
+    }
+    return Promise.resolve();
+  };
 
-  if (tempPathIntermediate) {
-    fs.unlink(path.resolve(tempPathIntermediate), (err) => {
-      if (err) throw err;
-    });
-  }
-
-  if (isError) {
-    return;
-  }
-
-  context.flow.file[isPDF ? 'tempPathIntermediate' : 'tempPathEdit'] = tempPathEdit;
+  context.flow.call = {
+    exec: 'convert',
+    options: [path.resolve(original), '-auto-gamma', '-auto-level', '-normalize', tempPathEdit],
+    onSuccess: async (_outLog) => {
+      context.flow.file.tempPathEdit = tempPathEdit;
+      await clean();
+    }
+  };
+  await asyncSys.call(context, next);
 };
 
-// Set -define dng:use-camera-wb=true to use the RAW-embedded color profile for Sony cameras. You can also set these options: use-auto-wb, use-auto-bright, and output-color
-// magick /home/wim/temp/DSC09670.ARW -define "dng:use-camera-wb=true dng:use-auto-bright=true" -auto-gamma -auto-level -normalize /home/wim/temp/jpg/DSC09670-im.jpg
+export default {
+  convert
+};

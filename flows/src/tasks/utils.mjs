@@ -1,10 +1,11 @@
 'use strict';
 
 import path from 'path';
-import { convert as imageConvert } from '../converters/imagemagick.mjs';
-import { convert as rawConvert } from '../converters/rawtherapee.mjs';
-import { convert as movieConvert } from '../converters/ffmpeg.mjs';
-import { convert as documentConvert } from '../converters/tesseract.mjs';
+import Flow from '../services/flow.mjs';
+import improve from '../converters/imagemagick.mjs';
+import raw from '../converters/rawtherapee.mjs';
+import reEncode from '../converters/ffmpeg.mjs';
+import ocr from '../converters/tesseract.mjs';
 import { basePaths } from '../basics/config.mjs';
 import { SOURCE, CAMERA, MONTH, FILE_CATEGORY } from '../basics/constants.mjs';
 
@@ -12,18 +13,18 @@ const cleanExifDate = (exifDate) => exifDate
   ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, '$1-$2-$3T').replace(/\s+DST\s*$/i, '')
   : null;
 const simpleFormatDate = (date) => date.toISOString().replace(/(-|:|\.\d{3}Z)/g, '');
-const noConvert = async (context, next) => {
+const noConvert = async (_context, next) => {
   await next();
 };
 const conversionMap = {
-  jpg: { converters: [imageConvert] },
-  jpeg: { converters: [imageConvert], editExtension: 'jpg' },
-  png: { converters: [imageConvert] },
-  arw: { converters: [rawConvert, imageConvert], editExtension: 'jpg' },
-  mp4: { converters: [movieConvert] },
-  mov: { converters: [movieConvert], editExtension: 'mp4' },
-  mts: { converters: [movieConvert], editExtension: 'mp4' },
-  pdf: { converters: [documentConvert] },
+  jpg: { converters: [improve.convert] },
+  jpeg: { converters: [improve.convert], editExtension: 'jpg' },
+  png: { converters: [improve.convert] },
+  arw: { converters: [raw.convert, improve.convert], editExtension: 'jpg' },
+  mp4: { converters: [reEncode.convert(1), reEncode.convert(2)] },
+  mov: { converters: [reEncode.convert(1), reEncode.convert(2)], editExtension: 'mp4' },
+  mts: { converters: [reEncode.convert(1), reEncode.convert(2)], editExtension: 'mp4' },
+  pdf: { converters: [ocr.convert] },
   aae: { converters: [noConvert] }
 };
 
@@ -36,7 +37,7 @@ const checkForChanges = (lastScan) => async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || !Array.isArray(context.flow.folder.details)) {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || !Array.isArray(context.flow.folder.details)) {
     throw new TypeError('A context flow must contain folder details of type array!');
   }
   const lastScanTimestamp = lastScan.timestamp;
@@ -67,7 +68,7 @@ const deriveInfo = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined') {
     throw new TypeError('A context flow must contain file information');
   }
 
@@ -85,8 +86,8 @@ const deriveInfo = async (context, next) => {
 
   const { Make, Model } = exif;
   const { name } = details;
-  const camera = CAMERA.findBy('label', Model);
-  const make = SOURCE.findBy('label', Make);
+  const camera = Model ? CAMERA.findBy('label', Model) : null;
+  const make = Make ? SOURCE.findBy('label', Make) : null;
   const folder = SOURCE.findBy('code', context.flow.file.folder);
 
   const tags = [];
@@ -138,18 +139,20 @@ const convert = async (context, next) => {
   if (typeof next !== 'function') {
     throw new TypeError('A next item must be a function!');
   }
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined') {
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined') {
     throw new TypeError('A context flow must contain file information');
   }
 
   const { exif } = context.flow.file;
   const { FileTypeExtension } = exif;
 
-  const converters = conversionMap[FileTypeExtension].converters;
-  let index = 0;
-  while (index < converters.length) {
-    await converters[index++](context, next);
+  const conversionFlow = new Flow();
+
+  for (const converter of conversionMap[FileTypeExtension].converters) {
+    conversionFlow.add(converter);
   }
+  await conversionFlow.go(context);
+
   await next();
 };
 

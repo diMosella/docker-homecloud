@@ -1,15 +1,15 @@
 'use strict';
 
-import { execFile } from 'child_process';
-import { promisify } from 'util';
 import path from 'path';
+import asyncSys from './asyncSys.mjs';
 import { tempFolder } from '../basics/config.mjs';
 
-const asyncExec = promisify(execFile);
-
-export const convert = async (context) => {
-  if (typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
-    throw new TypeError('A context temp path must be of type string!');
+const convert = async (context, next) => {
+  if (typeof next !== 'function') {
+    return Promise.reject(new TypeError('next should be a function'));
+  }
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+    return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
   const { tempPathOrg, derived } = context.flow.file;
@@ -17,18 +17,17 @@ export const convert = async (context) => {
 
   const tempPathIntermediate = path.resolve(`${tempFolder}/${nameEdit}.tif`);
 
-  let isError = false;
-  await asyncExec('rawtherapee-cli',
-    ['-o', `${tempPathIntermediate}`, '-t', '-Y', '-d', '-c', path.resolve(tempPathOrg)]
-  ).catch(error => {
-    console.log('error:', error);
-    isError = true;
-    return error;
-  });
+  context.flow.call = {
+    exec: 'rawtherapee-cli',
+    options: ['-o', `${tempPathIntermediate}`, '-t', '-Y', '-d', '-c', path.resolve(tempPathOrg)],
+    onSuccess: (_outLog) => {
+      context.flow.file.tempPathIntermediate = tempPathIntermediate;
+      return Promise.resolve();
+    }
+  };
+  await asyncSys.call(context, next);
+};
 
-  if (isError) {
-    return;
-  }
-
-  context.flow.file.tempPathIntermediate = tempPathIntermediate;
+export default {
+  convert
 };

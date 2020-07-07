@@ -40,12 +40,25 @@ const messenger = (processRef) => {
 
 /**
  * Promise to emulate request - response for messages between (cluster) members
- * @param { String } message
+ * @param { Object } message
  * @param { Worker | ChildProcess } processRef
  * @param { Number } waitTime
  * @param { Number } timeUnit
  */
-export default (message, processRef, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => new Promise((resolve, reject) => {
+export default (message, processRef = null, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) => new Promise((resolve, reject) => {
+  if (typeof message !== 'object') {
+    return Promise.reject(new TypeError('message should be an object'));
+  }
+  if (processRef !== null && !(processRef instanceof Worker || processRef instanceof ChildProcess)) {
+    return Promise.reject(new TypeError('processRef should be a Worker or ChildProcess'));
+  }
+  if (typeof waitTime !== 'number') {
+    return Promise.reject(new TypeError('waitTime should be a number'));
+  }
+  if (!(timeUnit in Object.values(TIME_UNIT))) {
+    return Promise.reject(new TypeError('timeUnit should be in timeUnitEnum'));
+  }
+
   const { sleep, interrupt : wakeUp } = sleeper(waitTime, timeUnit, true);
   const { send, receive, interrupt : tooLate } = messenger(processRef);
   Promise.allSettled([

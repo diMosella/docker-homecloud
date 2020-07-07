@@ -10,6 +10,15 @@ import { TIME_UNIT } from './constants.mjs';
  * @param {boolean} [shouldReject=false] whether the promise should reject when timeout has been reached
  */
 export default (waitTime, timeUnit = TIME_UNIT.MINUTE, shouldReject = false) => {
+  if (typeof waitTime !== 'number') {
+    return Promise.reject(new TypeError('waitTime should be a number'));
+  }
+  if (!(timeUnit in Object.values(TIME_UNIT))) {
+    return Promise.reject(new TypeError('timeUnit should be in timeUnitEnum'));
+  }
+  if (typeof shouldReject !== 'boolean') {
+    return Promise.reject(new TypeError('shouldReject should be a boolean'));
+  }
   let _timer = null;
   let _reject = null;
   return {

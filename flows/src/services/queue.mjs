@@ -61,7 +61,7 @@ export default class Queue {
    */
   async push (itemPayload) {
     if (!itemPayload || this.#_isProcessing === true) {
-      return;
+      return Promise.resolve();
     }
     this.#_queue.push(Object.assign({}, itemPayload, { queueId: this.#_idGenerator.next().value, state: STATE.QUEUED }));
     const queueSize = this.#_queue.length;
@@ -69,12 +69,11 @@ export default class Queue {
 
     const { sleep, interrupt } = sleeper(this.#_waitTime, TIME_UNIT.SECOND);
     this.#_interrupts.push(interrupt);
-    let isError = false;
-    await sleep.catch((_err) => {
-      isError = true;
+    const error = await sleep.catch((error) => {
+      return Promise.resolve(error);
     });
-    if (isError) {
-      return;
+    if (error instanceof Error) {
+      return Promise.resolve();
     }
 
     if (this.#_queue.length === queueSize) {

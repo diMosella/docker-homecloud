@@ -96,11 +96,10 @@ const queueChanges = (changes, location, scanTimestamp) => {
 const scanLocations = async (locations, lastScan) => {
   if (queue.isProcessing === true) {
     console.log('already sL');
-    return;
+    return Promise.resolve();
   }
   const scanTimestamp = Date.now();
   for (const location of locations) {
-    let isError = false;
     const context = {
       flow: {
         folder: {
@@ -108,14 +107,14 @@ const scanLocations = async (locations, lastScan) => {
         }
       }
     };
-    await new Flow()
+    const error = await new Flow()
       .add(cloud.getFolderDetails)
       .add(utils.checkForChanges(lastScan))
       .go(context).catch((error) => {
         console.error(`${new Date().toISOString()}: Worker solo encountered error: ${error}`);
-        isError = true;
+        return Promise.resolve(error);
       });
-    if (!isError) {
+    if (!(error instanceof Error)) {
       queueChanges(context.flow.folder.changes, location, scanTimestamp);
     }
   }

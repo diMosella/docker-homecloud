@@ -14,45 +14,43 @@ const asyncAccess = promisify(fs.access);
 
 const existsInternal = async (filePath) => {
   const existError = await asyncAccess(path.resolve(filePath), fs.constants.F_OK).catch(error => {
-    return error;
+    return Promise.resolve(error);
   });
   if (!existError || existError.code !== 'ENOENT') {
-    return true;
+    return Promise.resolve(true);
   }
-  return false;
+  return Promise.resolve(false);
 };
 
 const existsExternal = async (filePath) => {
   if (typeof filePath !== 'string') {
-    throw new TypeError('A path must be a string!');
+    return Promise.reject(new TypeError('A path must be a string!'));
   }
 
   const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { filePath } }, null, 0.2, TIME_UNIT.SECOND)
     .catch((err) => console.log('no-cache', err));
   if (!inCache || inCache.action !== ACTION.CACHE_GOT || inCache.payload === null) {
     if (!(await client.exists(path.resolve(filePath)))) {
-      return false;
+      return Promise.resolve(false);
     }
     process.send({ action: ACTION.CACHE_SET, payload: { filePath, value: true } });
-    return true;
+    return Promise.resolve(true);
   }
-
-  console.log('inCache', inCache, process.pid);
 
   switch (typeof inCache.payload) {
     case 'object':
-      return true;
+      return Promise.resolve(true);
     case 'boolean':
       if (!inCache.payload) {
         const nowInCache = await messenger({ action: ACTION.CACHE_LISTEN, payload: { filePath } }, null, 1, TIME_UNIT.SECOND)
           .catch((err) => console.log('no-cache', err));
         if (!nowInCache || inCache.action !== ACTION.CACHE_HEARD || inCache.payload === null) {
-          return false;
+          return Promise.resolve(false);
         }
       }
-      return true;
+      return Promise.resolve(true);
     default:
-      return false;
+      return Promise.resolve(false);
   }
 };
 
@@ -61,12 +59,12 @@ const existsExternal = async (filePath) => {
  * @param cloudCache The cache to read and write
  * @param folderPath The path to ensure
  */
-export const ensureFolderHierarchy = async (cloudCache, folderPath) => {
+const ensureFolderHierarchy = async (cloudCache, folderPath) => { // FIXME: cloudCache via messenger
   if (!(cloudCache instanceof Cache)) {
-    throw new TypeError('A cloudCache must be a Cache!');
+    return Promise.reject(new TypeError('A cloudCache must be a Cache!'));
   }
   if (typeof folderPath !== 'string') {
-    throw new TypeError('A folderPath must be a string!');
+    return Promise.reject(new TypeError('A folderPath must be a string!'));
   }
   const pathParts = folderPath.split('/').filter((part) => part !== '');
   const precedingParts = [];
@@ -93,10 +91,10 @@ export const ensureFolderHierarchy = async (cloudCache, folderPath) => {
 
 const getFolderDetails = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || typeof context.flow.folder.location !== 'string') {
-    throw new TypeError('A context flow must contain a folder location of type string!');
+    return Promise.reject(new TypeError('A context flow must contain a folder location of type string!'));
   }
   const { location } = context.flow.folder;
   await client.checkConnectivity();
@@ -111,7 +109,7 @@ const getFolderDetails = async (context, next) => {
 
 const checkForExistence = async (context, next) => {
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
-    throw new TypeError('A context temp path must be of type string!');
+    return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
   const { tempPathOrg, derived } = context.flow.file;
@@ -121,7 +119,7 @@ const checkForExistence = async (context, next) => {
   if (!derived) {
     isExisting = await existsInternal(tempPathOrg);
     if (isExisting) {
-      return;
+      return Promise.resolve();
     }
     return await next();
   }
@@ -132,17 +130,17 @@ const checkForExistence = async (context, next) => {
   isExisting = await existsInternal(tempPathEdit);
 
   if (isExisting) {
-    return;
+    return Promise.resolve();
   }
   isExisting = await existsExternal(`${pathOrg}/${nameOrg}`);
   if (isExisting) {
-    return;
+    return Promise.resolve();
   }
 
   isExisting = await existsExternal(`${pathEdit}/${nameEdit}`);
 
   if (isExisting) {
-    return;
+    return Promise.resolve();
   }
 
   await next();
@@ -150,58 +148,66 @@ const checkForExistence = async (context, next) => {
 
 const downloadFile = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
-    throw new TypeError('A download context path must be of type string!');
+    return Promise.reject(new TypeError('A download context path must be of type string!'));
   }
   await client.checkConnectivity();
   const { tempPathOrg } = context.flow.file;
-  let isError = false;
-  await client.downloadToStream(context.flow.file.path, fs.createWriteStream(tempPathOrg)).catch((err) => {
-    console.log('download', err);
-    isError = true;
+  const error = await client.downloadToStream(context.flow.file.path, fs.createWriteStream(tempPathOrg)).catch((error) => {
+    console.log('download', error);
+    return Promise.resolve(error);
   });
 
-  if (isError) {
-    return;
+  if (error instanceof Error) {
+    return Promise.resolve();
   }
 
   await next();
 };
 
-export const moveOriginal = async (context, next) => {
+const moveOriginal = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.path !== 'string') {
-    throw new TypeError('A file path must be of type string!');
+    return Promise.reject(new TypeError('A file path must be of type string!'));
   }
   await client.checkConnectivity();
   const { derived } = context.flow.file;
   const { nameOrg, pathOrg } = derived;
   await ensureFolderHierarchy(context.flow.cache, pathOrg);
   console.log('move', path.resolve(`${pathOrg}/${nameOrg}`));
-  await client.move(context.flow.file.path, path.resolve(`${pathOrg}/${nameOrg}`)).catch((err) => {
-    console.log('move', err);
+  const error = await client.move(context.flow.file.path, path.resolve(`${pathOrg}/${nameOrg}`)).catch((error) => {
+    console.log('move', error);
+    return Promise.resolve(error);
   });
+
+  if (error instanceof Error) {
+    return Promise.resolve();
+  }
   await next();
 };
 
-export const uploadEdit = async (context, next) => {
+const uploadEdit = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
-    throw new Error('The file derived info must be set!');
+    return Promise.reject(new TypeError('The file derived info must be set!'));
   }
   await client.checkConnectivity();
   const { derived, tempPathEdit } = context.flow.file;
   const { nameEdit, pathEdit } = derived;
   await ensureFolderHierarchy(context.flow.cache, pathEdit);
-  await client.uploadFromStream(path.resolve(`${pathEdit}/${nameEdit}`), fs.createReadStream(tempPathEdit)).catch((err) => {
-    console.log('upload edit', err);
+  const error = await client.uploadFromStream(path.resolve(`${pathEdit}/${nameEdit}`), fs.createReadStream(tempPathEdit)).catch((error) => {
+    console.log('upload edit', error);
+    return Promise.resolve(error);
   });
+  if (error instanceof Error) {
+    return Promise.resolve();
+  }
   await next();
 };
 
@@ -216,12 +222,12 @@ const getTag = async (tagLabel) => {
   });
 };
 
-export const addTags = async (context, next) => {
+const addTags = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
-    throw new Error('The file derived info must be set!');
+    return Promise.reject(new TypeError('The file derived info must be set!'));
   }
   await client.checkConnectivity();
   const { derived } = context.flow.file;
@@ -234,5 +240,8 @@ export const addTags = async (context, next) => {
 export default {
   getFolderDetails,
   checkForExistence,
-  downloadFile
+  downloadFile,
+  ensureFolderHierarchy,
+  moveOriginal,
+  uploadEdit
 };

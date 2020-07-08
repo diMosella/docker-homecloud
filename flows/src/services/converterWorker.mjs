@@ -8,7 +8,7 @@ import { ACTION } from '../basics/constants.mjs';
 
 const convertFile = async (context) => {
   if (typeof context !== 'object') {
-    throw new TypeError('context must be an object');
+    return Promise.reject(new TypeError('context must be an object'));
   }
   outbox({ action: ACTION.QUEUE_LOCK, payload: { queueId: context.queueId } });
   await new Flow()

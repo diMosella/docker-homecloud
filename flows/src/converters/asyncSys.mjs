@@ -34,7 +34,7 @@ const call = async (context, next) => {
   });
   if (error) {
     await onFailure();
-    return;
+    return Promise.resolve();
   }
   await onSuccess(outLog);
   await next();

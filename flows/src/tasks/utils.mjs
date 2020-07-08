@@ -35,14 +35,14 @@ const extReg = /\.(JPG|JPEG|PNG|AAE|ARW|MP4|MOV|MTS|PDF)$/i;
 
 const checkForChanges = (lastScan) => async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || !Array.isArray(context.flow.folder.details)) {
-    throw new TypeError('A context flow must contain folder details of type array!');
+    return Promise.reject(new TypeError('A context flow must contain folder details of type array!'));
   }
   const lastScanTimestamp = lastScan.timestamp;
   if (typeof lastScanTimestamp !== 'number') {
-    throw new TypeError('lastScanTimestamp must be a number!');
+    return Promise.reject(new TypeError('lastScanTimestamp must be a number!'));
   }
 
   if (!Array.isArray(context.flow.folder.changes)) {
@@ -50,12 +50,12 @@ const checkForChanges = (lastScan) => async (context, next) => {
   }
 
   if (lastScanTimestamp > context.flow.folder.lastModified) {
-    return;
+    return Promise.resolve();
   }
 
   for (const detail of context.flow.folder.details) {
     if (detail.isDirectory) {
-      return;
+      return Promise.resolve();
     }
     if (extReg.test(path.extname(detail.name))) {
       context.flow.folder.changes.push(detail);
@@ -66,10 +66,10 @@ const checkForChanges = (lastScan) => async (context, next) => {
 
 const deriveInfo = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined') {
-    throw new TypeError('A context flow must contain file information');
+    return Promise.reject(new TypeError('A context flow must contain file information'));
   }
 
   const { details, exif } = context.flow.file;
@@ -137,10 +137,10 @@ const deriveInfo = async (context, next) => {
 
 const convert = async (context, next) => {
   if (typeof next !== 'function') {
-    throw new TypeError('A next item must be a function!');
+    return Promise.reject(new TypeError('A next item must be a function!'));
   }
   if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined') {
-    throw new TypeError('A context flow must contain file information');
+    return Promise.reject(new TypeError('A context flow must contain file information'));
   }
 
   const { exif } = context.flow.file;

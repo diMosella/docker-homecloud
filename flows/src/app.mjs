@@ -8,7 +8,7 @@ import { RETRY_DELAY, RETRY_MAX_COUNT, TIME_UNIT, WORKER_TYPE } from './basics/c
 
 const start = () => {
   if (!cluster.isMaster) {
-    throw new Error('This app should be run as non-worker process');
+    return Promise.reject(new TypeError('This app should be run as non-worker process'));
   }
 
   console.log(`${new Date().toISOString()}: Delegator ${process.pid} is running`);
@@ -33,7 +33,7 @@ const start = () => {
     },
     resetRetry: async (type) => {
       if (!(type in Object.values(WORKER_TYPE))) {
-        throw new TypeError('type should be in WorkerTypeEnum');
+        return Promise.reject(new TypeError('type should be in WorkerTypeEnum'));
       }
       await sleeper(RETRY_DELAY, TIME_UNIT.SECONDS).sleep;
       retries[type] = 0;

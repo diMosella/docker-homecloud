@@ -22,18 +22,18 @@ const existsInternal = async (filePath) => {
   return Promise.resolve(false);
 };
 
-const existsExternal = async (filePath) => {
-  if (typeof filePath !== 'string') {
+const existsExternal = async (nodePath) => {
+  if (typeof nodePath !== 'string') {
     return Promise.reject(new TypeError('A path must be a string!'));
   }
 
-  const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { filePath } }, null, 0.2, TIME_UNIT.SECOND)
+  const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { nodePath } }, null, 0.2, TIME_UNIT.SECOND)
     .catch((err) => console.log('no-cache', err));
   if (!inCache || inCache.action !== ACTION.CACHE_GOT || inCache.payload === null) {
-    if (!(await client.exists(path.resolve(filePath)))) {
+    if (!(await client.exists(path.resolve(nodePath)))) {
       return Promise.resolve(false);
     }
-    process.send({ action: ACTION.CACHE_SET, payload: { filePath, value: true } });
+    process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: true } });
     return Promise.resolve(true);
   }
 
@@ -42,9 +42,9 @@ const existsExternal = async (filePath) => {
       return Promise.resolve(true);
     case 'boolean':
       if (!inCache.payload) {
-        const nowInCache = await messenger({ action: ACTION.CACHE_LISTEN, payload: { filePath } }, null, 1, TIME_UNIT.SECOND)
+        const nowInCache = await messenger({ action: ACTION.CACHE_LISTEN, payload: { nodePath } }, null, 1, TIME_UNIT.SECOND)
           .catch((err) => console.log('no-cache', err));
-        if (!nowInCache || inCache.action !== ACTION.CACHE_HEARD || inCache.payload === null) {
+        if (!nowInCache || nowInCache.action !== ACTION.CACHE_HEARD || nowInCache.payload === null) {
           return Promise.resolve(false);
         }
       }
@@ -56,30 +56,32 @@ const existsExternal = async (filePath) => {
 
 /**
  * Ensure that a path / folder hierarchy does exist
- * @param cloudCache The cache to read and write
  * @param folderPath The path to ensure
  */
-const ensureFolderHierarchy = async (cloudCache, folderPath) => { // FIXME: cloudCache via messenger
-  if (!(cloudCache instanceof Cache)) {
-    return Promise.reject(new TypeError('A cloudCache must be a Cache!'));
-  }
+const ensureFolderHierarchy = async (folderPath) => {
   if (typeof folderPath !== 'string') {
     return Promise.reject(new TypeError('A folderPath must be a string!'));
   }
   const pathParts = folderPath.split('/').filter((part) => part !== '');
   const precedingParts = [];
   for (const nodeName of pathParts) {
-    const parentNode = precedingParts.reduce((accummulator, value) => accummulator[value], cloudCache.all);
+    const cacheResponse = await messenger({ action: ACTION.CACHE_GET, payload: { nodePath: '/' } }, null, 0.2, TIME_UNIT.SECOND)
+      .catch((err) => console.log('no-cache', err));
+    const cacheAll = cacheResponse && cacheResponse.action === ACTION.CACHE_GOT && cacheResponse.payload
+      ? cacheResponse.payload
+      : { };
+    const parentNode = precedingParts.reduce((accummulator, value) => accummulator[value], cacheAll);
     const nodePath = `${precedingParts.length > 0 ? '/' : ''}${precedingParts.join('/')}/${nodeName}`;
     switch (typeof parentNode[nodeName]) {
       case 'undefined':
-        cloudCache.set(nodePath, false);
+        process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: false } });
         await client.touchFolder(nodePath);
-        cloudCache.set(nodePath, true);
+        process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: true } });
         break;
       case 'boolean':
         if (!parentNode[nodeName]) {
-          await cloudCache.listen(nodePath);
+          await messenger({ action: ACTION.CACHE_LISTEN, payload: { nodePath } }, null, 1, TIME_UNIT.SECOND)
+            .catch((err) => console.log('no-cache', err));
         }
         break;
       default:
@@ -177,7 +179,7 @@ const moveOriginal = async (context, next) => {
   await client.checkConnectivity();
   const { derived } = context.flow.file;
   const { nameOrg, pathOrg } = derived;
-  await ensureFolderHierarchy(context.flow.cache, pathOrg);
+  await ensureFolderHierarchy(pathOrg);
   console.log('move', path.resolve(`${pathOrg}/${nameOrg}`));
   const error = await client.move(context.flow.file.path, path.resolve(`${pathOrg}/${nameOrg}`)).catch((error) => {
     console.log('move', error);
@@ -200,12 +202,14 @@ const uploadEdit = async (context, next) => {
   await client.checkConnectivity();
   const { derived, tempPathEdit } = context.flow.file;
   const { nameEdit, pathEdit } = derived;
-  await ensureFolderHierarchy(context.flow.cache, pathEdit);
+  await ensureFolderHierarchy(pathEdit);
+  // reminder: streaming implies creating an empty file on NextCloud and adding bytes to it: therefore user should have create AND edit permissions
   const error = await client.uploadFromStream(path.resolve(`${pathEdit}/${nameEdit}`), fs.createReadStream(tempPathEdit)).catch((error) => {
     console.log('upload edit', error);
     return Promise.resolve(error);
   });
   if (error instanceof Error) {
+    console.log(error);
     return Promise.resolve();
   }
   await next();

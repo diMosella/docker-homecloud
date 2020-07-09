@@ -69,6 +69,9 @@ export default class Flow {
    * @param { Object } context The context to operate on
    */
   async go (context) {
-    return await this.#_join()(context);
+    return await this.#_join()(context).catch((error) => {
+      console.error(`${new Date().toISOString()}: Flow encountered error: ${error}`);
+      return Promise.resolve(error);
+    });
   }
 }

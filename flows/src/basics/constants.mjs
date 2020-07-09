@@ -36,8 +36,6 @@ export const { instance: ACTION, class: ActionEnum } = enumerate(
   new EnumProperties('queue_lock', 'lock queue item'),
   new EnumProperties('queue_finish', 'finish queue item processing'),
   new EnumProperties('queue_final', 'queue is final, completely processed'),
-  new EnumProperties('cache_get_all', 'get complete cache'),
-  new EnumProperties('cache_got_all', 'got complete cache'),
   new EnumProperties('cache_get', 'get path value from cache'),
   new EnumProperties('cache_got', 'got path value from cache'),
   new EnumProperties('cache_set', 'set path value in cache'),

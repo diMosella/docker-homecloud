@@ -12,7 +12,7 @@ const extract = async (context, next) => {
   }
 
   context.flow.call = {
-    exec: 'exiftools',
+    exec: 'exiftool',
     options: ['-j', '-a', path.resolve(context.flow.file.tempPathOrg)],
     onSuccess: (outLog) => {
       context.flow.file.exif = JSON.parse(outLog)[0];

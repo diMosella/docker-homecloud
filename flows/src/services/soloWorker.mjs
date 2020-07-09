@@ -12,6 +12,19 @@ import LastScan from '../basics/lastScan.mjs';
 import { watch as watchConfig, tempFolder } from '../basics/config.mjs';
 import { ACTION, STATE } from '../basics/constants.mjs';
 
+const cronOptions = {
+  scheduled: true,
+  timezone: 'Europe/Amsterdam'
+};
+
+const expandWatchConfig = (result, item) => {
+  const { frequency, locations } = item;
+  for (const location of locations) {
+    result.push({ frequency, location });
+  }
+  return result;
+};
+
 const getItem = () => {
   const { value, done } = queue.next();
   if (!done && value) {
@@ -44,8 +57,13 @@ const inbox = (message) => {
       }
       break;
     case ACTION.CACHE_GET:
-      if (payload && typeof payload.filePath === 'string') {
-        outbox({ action: ACTION.CACHE_GOT, payload: cache.getByPath(message.payload.filePath) });
+      if (payload && typeof payload.nodePath === 'string') {
+        outbox({ action: ACTION.CACHE_GOT, payload: payload.nodePath === '/' ? cache.all : cache.getByPath(payload.nodePath) });
+      }
+      break;
+    case ACTION.CACHE_SET:
+      if (payload && typeof payload.nodePath === 'string' && typeof payload.value === 'boolean') {
+        cache.set(payload.nodePath, payload.value);
       }
       break;
     default:
@@ -93,30 +111,25 @@ const queueChanges = (changes, location, scanTimestamp) => {
   }
 };
 
-const scanLocations = async (locations, lastScan) => {
+const scanLocation = async (location, lastScan) => {
   if (queue.isProcessing === true) {
     console.log('already sL');
     return Promise.resolve();
   }
   const scanTimestamp = Date.now();
-  for (const location of locations) {
-    const context = {
-      flow: {
-        folder: {
-          location
-        }
+  const context = {
+    flow: {
+      folder: {
+        location
       }
-    };
-    const error = await new Flow()
-      .add(cloud.getFolderDetails)
-      .add(utils.checkForChanges(lastScan))
-      .go(context).catch((error) => {
-        console.error(`${new Date().toISOString()}: Worker solo encountered error: ${error}`);
-        return Promise.resolve(error);
-      });
-    if (!(error instanceof Error)) {
-      queueChanges(context.flow.folder.changes, location, scanTimestamp);
     }
+  };
+  const error = await new Flow()
+    .add(cloud.getFolderDetails)
+    .add(utils.checkForChanges(lastScan))
+    .go(context);
+  if (!(error instanceof Error)) {
+    queueChanges(context.flow.folder.changes, location, scanTimestamp);
   }
   lastScan.timestamp = scanTimestamp;
 };
@@ -126,12 +139,10 @@ const start = () => {
 
   process.on('message', inbox);
 
-  for (const item of watchConfig) {
+  const cronConfig = watchConfig.reduce(expandWatchConfig, []);
+  for (const item of cronConfig) {
     const lastScan = new LastScan();
-    const task = cron.schedule(item.frequency, () => scanLocations(item.locations, lastScan), {
-      scheduled: true,
-      timezone: 'Europe/Amsterdam'
-    });
+    const task = cron.schedule(item.frequency, () => scanLocation(item.location, lastScan), cronOptions);
     taskList.push(task);
   }
 

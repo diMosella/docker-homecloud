@@ -17,9 +17,9 @@ const convertFile = async (context) => {
     .add(exif.extract)
     .add(utils.deriveInfo)
     .add(cloud.checkForExistence)
-  //   .add(convert)
-  //   .add(moveOriginal)
-  //   .add(uploadEdit)
+    .add(utils.convert)
+    .add(cloud.moveOriginal)
+    .add(cloud.uploadEdit)
   // // .add(addTags)
     .go(context);
   outbox({ action: ACTION.QUEUE_FINISH, payload: { queueId: context.queueId } });

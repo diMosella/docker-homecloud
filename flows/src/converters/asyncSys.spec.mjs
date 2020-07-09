@@ -8,6 +8,7 @@ const assert = chai.assert;
 
 describe('(Converter) asyncSys.call', () => {
   const onFailureStub = sinon.fake();
+  const errorStub = sinon.fake();
 
   after(() => {
     sinon.restore();
@@ -37,7 +38,8 @@ describe('(Converter) asyncSys.call', () => {
     delete context.flow.call.onSuccess;
     await assert.throwsAsync(() => asyncSys.call(context, next), TypeError);
     context.flow.call.onFailure = onFailureStub;
-    await asyncSys.call(context, next);
+    await asyncSys.call(context, next).catch(errorStub);
     assert.equal(onFailureStub.callCount, 1);
+    assert.equal(errorStub.callCount, 1);
   });
 });

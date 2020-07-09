@@ -94,6 +94,12 @@ export default class {
           }
         }
         break;
+      case ACTION.CACHE_SET:
+        foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
+        if (foundCandidate) {
+          foundCandidate.worker.send({ action, payload });
+        }
+        break;
       default:
         break;
     }

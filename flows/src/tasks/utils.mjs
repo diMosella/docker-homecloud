@@ -151,7 +151,10 @@ const convert = async (context, next) => {
   for (const converter of conversionMap[FileTypeExtension].converters) {
     conversionFlow.add(converter);
   }
-  await conversionFlow.go(context);
+  const error = await conversionFlow.go(context);
+  if (error instanceof Error) {
+    return Promise.resolve();
+  }
 
   await next();
 };

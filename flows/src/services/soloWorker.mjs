@@ -59,7 +59,10 @@ const inbox = (message) => {
       break;
     case ACTION.CACHE_GET:
       if (payload && typeof payload.nodePath === 'string') {
-        outbox({ action: ACTION.CACHE_GOT, payload: payload.nodePath === '/' ? cache.all : cache.getByPath(payload.nodePath) });
+        outbox({
+          action: ACTION.CACHE_GOT,
+          payload: payload.nodePath === '/' ? cache.all : cache.getByPath(payload.nodePath)
+        });
       }
       break;
     case ACTION.CACHE_SET:
@@ -144,7 +147,11 @@ const start = () => {
   const cronConfig = watchConfig.reduce(expandWatchConfig, []);
   for (const item of cronConfig) {
     const lastScan = new LastScan();
-    const task = cron.schedule(item.frequency, () => scanLocation(item.location, lastScan), cronOptions);
+    const task = cron.schedule(
+      item.frequency,
+      () => scanLocation(item.location, lastScan),
+      cronOptions
+    );
     taskList.push(task);
     scanLocation(item.location, lastScan);
   }

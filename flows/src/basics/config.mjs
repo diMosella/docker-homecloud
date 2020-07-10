@@ -8,8 +8,10 @@ import { SOURCE, FILE_CATEGORY } from './constants.mjs';
 export const watch = [
   {
     frequency: '*/2 7-21 * * *',
-    locations: [SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN]
-      .map((item) => SOURCE.getProperty(item, 'code'))
+    locations: [
+      SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA,
+      SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN
+    ].map((item) => SOURCE.getProperty(item, 'code'))
   }
 ];
 

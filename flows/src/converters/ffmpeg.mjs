@@ -17,7 +17,9 @@ const convert = (step) => {
     if (typeof next !== 'function') {
       return Promise.reject(new TypeError('next should be a function'));
     }
-    if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+    if (!context || typeof context.flow === 'undefined' ||
+        typeof context.flow.file === 'undefined' ||
+        typeof context.flow.file.tempPathOrg !== 'string') {
       return Promise.reject(new TypeError('A context temp path must be of type string!'));
     }
 

@@ -5,6 +5,7 @@ import Koa from 'koa';
 import Router from '@koa/router';
 import json from 'koa-json';
 import serve from 'koa-static';
+import Log from './log.mjs';
 import { notify } from '../tasks/trigger.mjs';
 import messenger from '../basics/messenger.mjs';
 import { ACTION } from '../basics/constants.mjs';
@@ -28,6 +29,8 @@ const start = () => {
 
   process.on('message', inbox);
 
+  const log = new Log();
+
   const app = new Koa();
   const triggerRouter = new Router();
   const healthRouter = new Router();
@@ -43,7 +46,8 @@ const start = () => {
 
   healthRouter.get('/status', async (ctx, _next) => {
     const startTimestamp = Date.now();
-    const message = await messenger({ action: ACTION.PING, payload: { processId } }).catch((err) => console.log('no-message', err));
+    const message = await messenger({ action: ACTION.PING, payload: { processId } })
+      .catch((error) => log.warn('no return message for ping', error));
 
     if (message && message.action === ACTION.PONG) {
       ctx.body = { success: !(message.payload.healthTimestamp - startTimestamp < 0) };
@@ -61,7 +65,7 @@ const start = () => {
   app.use(async (ctx, next) => {
     await next();
     const rt = ctx.response.get('X-Response-Time');
-    console.log(`${new Date().toISOString()}: ${ctx.method} ${ctx.url} - ${rt}, by worker ${processId}`);
+    log.debug(`${ctx.method} ${ctx.url} - ${rt}, by worker ${processId}`);
   });
 
   // x-response-time
@@ -78,7 +82,7 @@ const start = () => {
   app.use(serve(docroot));
 
   return app.listen({ port, host }, () => {
-    console.log(`${new Date().toISOString()}: Flows listening on ${host}:${port}.`);
+    log.info(`Worker server ${processId} at ${Date.now()} - listening on ${host}:${port}.`);
     outbox({ action: ACTION.AVAILABLE });
   });
 };

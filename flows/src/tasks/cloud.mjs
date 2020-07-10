@@ -30,8 +30,10 @@ const existsExternal = async (nodePath) => {
     return Promise.reject(new TypeError('A path must be a string!'));
   }
 
-  const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { nodePath } }, null, 0.2, TIME_UNIT.SECOND)
-    .catch((err) => log.warn('no return message from cache', err));
+  const inCache = await messenger(
+    { action: ACTION.CACHE_GET, payload: { nodePath } },
+    null, 0.2, TIME_UNIT.SECOND
+  ).catch((error) => log.warn('no return message from cache', error));
   if (!inCache || inCache.action !== ACTION.CACHE_GOT || inCache.payload === null) {
     if (!(await client.exists(path.resolve(nodePath)))) {
       return Promise.resolve(false);
@@ -45,9 +47,12 @@ const existsExternal = async (nodePath) => {
       return Promise.resolve(true);
     case 'boolean':
       if (!inCache.payload) {
-        const nowInCache = await messenger({ action: ACTION.CACHE_LISTEN, payload: { nodePath } }, null, 1, TIME_UNIT.SECOND)
-          .catch((err) => console.log('no-cache', err));
-        if (!nowInCache || nowInCache.action !== ACTION.CACHE_HEARD || nowInCache.payload === null) {
+        const nowInCache = await messenger(
+          { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
+          null, 1, TIME_UNIT.SECOND
+        ).catch((error) => log.warn('no return message from cache', error));
+        if (!nowInCache || nowInCache.action !== ACTION.CACHE_HEARD ||
+            nowInCache.payload === null) {
           return Promise.resolve(false);
         }
       }
@@ -68,13 +73,21 @@ const ensureFolderHierarchy = async (folderPath) => {
   const pathParts = folderPath.split('/').filter((part) => part !== '');
   const precedingParts = [];
   for (const nodeName of pathParts) {
-    const cacheResponse = await messenger({ action: ACTION.CACHE_GET, payload: { nodePath: '/' } }, null, 0.2, TIME_UNIT.SECOND)
-      .catch((err) => console.log('no-cache', err));
-    const cacheAll = cacheResponse && cacheResponse.action === ACTION.CACHE_GOT && cacheResponse.payload
+    const cacheResponse = await messenger(
+      { action: ACTION.CACHE_GET, payload: { nodePath: '/' } },
+      null, 0.2, TIME_UNIT.SECOND
+    ).catch((error) => log.warn('no return message from cache', error));
+    const cacheAll = cacheResponse && cacheResponse.action === ACTION.CACHE_GOT &&
+        cacheResponse.payload
       ? cacheResponse.payload
       : { };
-    const parentNode = precedingParts.reduce((accummulator, value) => accummulator[value], cacheAll);
-    const nodePath = `${precedingParts.length > 0 ? '/' : ''}${precedingParts.join('/')}/${nodeName}`;
+    const parentNode = precedingParts.reduce(
+      (accummulator, value) => accummulator[value],
+      cacheAll
+    );
+    const nodePath = `${precedingParts.length > 0
+      ? '/'
+      : ''}${precedingParts.join('/')}/${nodeName}`;
     switch (typeof parentNode[nodeName]) {
       case 'undefined':
         process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: false } });
@@ -83,8 +96,10 @@ const ensureFolderHierarchy = async (folderPath) => {
         break;
       case 'boolean':
         if (!parentNode[nodeName]) {
-          await messenger({ action: ACTION.CACHE_LISTEN, payload: { nodePath } }, null, 1, TIME_UNIT.SECOND)
-            .catch((err) => console.log('no-cache', err));
+          await messenger(
+            { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
+            null, 1, TIME_UNIT.SECOND
+          ).catch((error) => log.warn('no return message from cache', error));
         }
         break;
       default:
@@ -98,8 +113,12 @@ const getFolderDetails = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('A next item must be a function!'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || typeof context.flow.folder.location !== 'string') {
-    return Promise.reject(new TypeError('A context flow must contain a folder location of type string!'));
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.folder === 'undefined' ||
+      typeof context.flow.folder.location !== 'string') {
+    return Promise.reject(
+      new TypeError('A context flow must contain a folder location of type string!')
+    );
   }
   const { location } = context.flow.folder;
   await client.checkConnectivity();
@@ -113,7 +132,9 @@ const getFolderDetails = async (context, next) => {
 };
 
 const checkForExistence = async (context, next) => {
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.file === 'undefined' ||
+      typeof context.flow.file.tempPathOrg !== 'string') {
     return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
@@ -155,13 +176,18 @@ const downloadFile = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('A next item must be a function!'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.file === 'undefined' ||
+      typeof context.flow.file.tempPathOrg !== 'string') {
     return Promise.reject(new TypeError('A download context path must be of type string!'));
   }
   await client.checkConnectivity();
   const { tempPathOrg } = context.flow.file;
-  const error = await client.downloadToStream(context.flow.file.path, fs.createWriteStream(tempPathOrg)).catch((error) => {
-    console.log('download', error);
+  const error = await client.downloadToStream(
+    context.flow.file.path,
+    fs.createWriteStream(tempPathOrg)
+  ).catch((error) => {
+    log.debug('downloading did not succeed', error);
     return Promise.resolve(error);
   });
 
@@ -176,16 +202,19 @@ const moveOriginal = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('A next item must be a function!'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.path !== 'string') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.file === 'undefined' || typeof context.flow.file.path !== 'string') {
     return Promise.reject(new TypeError('A file path must be of type string!'));
   }
   await client.checkConnectivity();
   const { derived } = context.flow.file;
   const { nameOrg, pathOrg } = derived;
   await ensureFolderHierarchy(pathOrg);
-  console.log('move', path.resolve(`${pathOrg}/${nameOrg}`));
-  const error = await client.move(context.flow.file.path, path.resolve(`${pathOrg}/${nameOrg}`)).catch((error) => {
-    console.log('move', error);
+  const error = await client.move(
+    context.flow.file.path,
+    path.resolve(`${pathOrg}/${nameOrg}`)
+  ).catch((error) => {
+    log.debug('moving did not succeed', error);
     return Promise.resolve(error);
   });
 
@@ -199,20 +228,25 @@ const uploadEdit = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('A next item must be a function!'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.file === 'undefined' ||
+      typeof context.flow.file.derived === 'undefined') {
     return Promise.reject(new TypeError('The file derived info must be set!'));
   }
   await client.checkConnectivity();
   const { derived, tempPathEdit } = context.flow.file;
   const { nameEdit, pathEdit } = derived;
   await ensureFolderHierarchy(pathEdit);
-  // reminder: streaming implies creating an empty file on NextCloud and adding bytes to it: therefore user should have create AND edit permissions
-  const error = await client.uploadFromStream(path.resolve(`${pathEdit}/${nameEdit}`), fs.createReadStream(tempPathEdit)).catch((error) => {
-    console.log('upload edit', error);
+  // reminder: streaming implies creating an empty file on NextCloud and
+  //  adding bytes to it: therefore user should have create AND edit permissions
+  const error = await client.uploadFromStream(
+    path.resolve(`${pathEdit}/${nameEdit}`),
+    fs.createReadStream(tempPathEdit)
+  ).catch((error) => {
+    log.debug('uploading did not succeed', error);
     return Promise.resolve(error);
   });
   if (error instanceof Error) {
-    console.log(error);
     return Promise.resolve();
   }
   await next();
@@ -224,8 +258,8 @@ const getTag = async (tagLabel) => {
     userVisible: true,
     userAssignable: true,
     canAssign: true
-  })).catch((err) => {
-    console.log(err);
+  })).catch((error) => {
+    log.debug('retrieving tag did not succeed', error);
   });
 };
 
@@ -233,14 +267,15 @@ const addTags = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('A next item must be a function!'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.derived === 'undefined') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.file === 'undefined' ||
+      typeof context.flow.file.derived === 'undefined') {
     return Promise.reject(new TypeError('The file derived info must be set!'));
   }
   await client.checkConnectivity();
   const { derived } = context.flow.file;
   derived.tagsOrg.forEach(async (tagLabel) => { // FIXME: foreach doesn't handle async well
     const tag = await getTag(tagLabel);
-    console.log('tagLabel', tag);
   });
 };
 

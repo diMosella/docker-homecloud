@@ -1,5 +1,9 @@
 'use strict';
 
+import Log from './log.mjs';
+
+const log = new Log();
+
 export default class Flow {
   #_nodes = [];
 
@@ -39,8 +43,8 @@ export default class Flow {
         }
         try {
           return Promise.resolve(node(context, dispatch.bind(null, index + 1)));
-        } catch (err) {
-          return Promise.reject(err);
+        } catch (error) {
+          return Promise.reject(error);
         }
       }
       return dispatch(0);
@@ -70,7 +74,7 @@ export default class Flow {
    */
   async go (context) {
     return await this.#_join()(context).catch((error) => {
-      console.error(`${new Date().toISOString()}: Flow encountered error: ${error}`);
+      log.error(`Flow encountered error: ${error}`);
       return Promise.resolve(error);
     });
   }

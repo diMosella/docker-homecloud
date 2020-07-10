@@ -31,25 +31,25 @@ export default class Log {
     return `${new Date().toISOString()} - ${level}: ${message}`;
   };
 
-  error (message) {
-    console.error(this.#_format(Log.prototype.error.name, message));
+  error (message, ...additionalInfo) {
+    console.error(this.#_format(Log.prototype.error.name, message), additionalInfo);
   };
 
-  warn (message) {
+  warn (message, ...additionalInfo) {
     if (this.#_level >= LOG_LEVEL.WARN) {
-      console.warn(this.#_format(Log.prototype.warn.name, message));
+      console.warn(this.#_format(Log.prototype.warn.name, message), additionalInfo);
     }
   };
 
-  info (message) {
+  info (message, ...additionalInfo) {
     if (this.#_level >= LOG_LEVEL.INFO) {
-      console.info(this.#_format(Log.prototype.info.name, message));
+      console.info(this.#_format(Log.prototype.info.name, message), additionalInfo);
     }
   };
 
-  debug (message) {
+  debug (message, ...additionalInfo) {
     if (this.#_level >= LOG_LEVEL.DEBUG) {
-      console.debug(this.#_format(Log.prototype.debug.name, message));
+      console.debug(this.#_format(Log.prototype.debug.name, message), additionalInfo);
     }
   };
 }

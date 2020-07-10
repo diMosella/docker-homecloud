@@ -12,7 +12,11 @@ if (process.argv.includes('--sender')) {
     };
     process.on('message', listener);
     const transporter = messenger({ type: 'request' });
-    process.send({ type: 'type', value: typeof transporter, isPromise: transporter instanceof Promise });
+    process.send({
+      type: 'type',
+      value: typeof transporter,
+      isPromise: transporter instanceof Promise
+    });
     await transporter;
     process.send({ type: 'final' });
     process.removeListener('message', listener);

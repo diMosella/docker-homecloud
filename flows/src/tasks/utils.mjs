@@ -41,8 +41,12 @@ const checkForChanges = (lastScan) => async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('A next item must be a function!'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.folder === 'undefined' || !Array.isArray(context.flow.folder.details)) {
-    return Promise.reject(new TypeError('A context flow must contain folder details of type array!'));
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.folder === 'undefined' ||
+      !Array.isArray(context.flow.folder.details)) {
+    return Promise.reject(
+      new TypeError('A context flow must contain folder details of type array!')
+    );
   }
   const lastScanTimestamp = lastScan.timestamp;
   if (typeof lastScanTimestamp !== 'number') {
@@ -97,18 +101,22 @@ const deriveInfo = async (context, next) => {
   const tags = [];
   let category = FILE_CATEGORY.MEDIA;
   let source = SOURCE.getProperty(SOURCE.EXT, 'label');
-  if (camera === CAMERA.NEX_5T && make === SOURCE.SONY && folder === SOURCE.SONY && sonyReg.test(name)) {
+  if (camera === CAMERA.NEX_5T && make === SOURCE.SONY &&
+        folder === SOURCE.SONY && sonyReg.test(name)) {
     tags.push(SOURCE.getProperty(make, 'label'));
     source = SOURCE.getProperty(make, 'label');
-  } else if ((folder === SOURCE.ABIGAIL_SCAN || folder === SOURCE.WIM_SCAN || folder === SOURCE.DIMOSELLA_SCAN) && scanReg.test(name)) {
+  } else if ((folder === SOURCE.ABIGAIL_SCAN || folder === SOURCE.WIM_SCAN ||
+        folder === SOURCE.DIMOSELLA_SCAN) && scanReg.test(name)) {
     tags.push(SOURCE.getProperty(folder, 'label'));
     tags.push('Scan');
     category = FILE_CATEGORY.DOCS;
     source = `${SOURCE.getProperty(folder, 'label')}-Scan`;
-  } else if (camera === CAMERA.IPHONE_SE && (folder === SOURCE.ABIGAIL || folder === SOURCE.WIM) && iPhoneReg.test(name)) {
+  } else if (camera === CAMERA.IPHONE_SE && (folder === SOURCE.ABIGAIL ||
+        folder === SOURCE.WIM) && iPhoneReg.test(name)) {
     tags.push(SOURCE.getProperty(folder, 'label'));
-    tags.push(CAMERA.getProperty(camera, 'label').replace(/\s/, ''));
-    source = `${SOURCE.getProperty(folder, 'label')}-${CAMERA.getProperty(camera, 'label').replace(/\s/, '')}`;
+    const cameraLabel = CAMERA.getProperty(camera, 'label').replace(/\s/, '');
+    tags.push(cameraLabel);
+    source = `${SOURCE.getProperty(folder, 'label')}-${cameraLabel}`;
   } else {
     tags.push(SOURCE.getProperty('EXT', 'label'));
   }
@@ -122,7 +130,8 @@ const deriveInfo = async (context, next) => {
   const tagsOrg = [...tags, 'org'];
   const tagsEdit = [...tags, 'edit'];
 
-  const editExtension = conversionMap[exif.FileTypeExtension].editExtension || exif.FileTypeExtension;
+  const editExtension = conversionMap[exif.FileTypeExtension].editExtension ||
+      exif.FileTypeExtension;
 
   const datePath = `${year}/${year}-${month}/${year}-${month}-${date}`;
   context.flow.file.derived = {

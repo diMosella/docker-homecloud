@@ -5,7 +5,10 @@ import cluster from 'cluster';
 import sleeper from './basics/sleeper.mjs';
 import Log from './services/log.mjs';
 import WorkerManager from './services/workerManager.mjs';
-import { ENVIRONMENT, RETRY_DELAY, RETRY_MAX_COUNT, TIME_UNIT, WORKER_TYPE } from './basics/constants.mjs';
+import {
+  ENVIRONMENT, RETRY_DELAY, RETRY_MAX_COUNT,
+  TIME_UNIT, WORKER_TYPE
+} from './basics/constants.mjs';
 
 const start = () => {
   if (!cluster.isMaster) {
@@ -17,7 +20,8 @@ const start = () => {
   log.debug(`Delegator ${process.pid} is running`);
 
   const cpuCount = cpus().length;
-  const retries = Object.values(WORKER_TYPE).reduce((acumm, type) => Object.assign(acumm, { [type]: 0 }), {});
+  const retries = Object.values(WORKER_TYPE)
+    .reduce((acumm, type) => Object.assign(acumm, { [type]: 0 }), {});
 
   const processes = {
     addConverters: () => {

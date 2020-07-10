@@ -2,6 +2,7 @@
 
 import cluster from 'cluster';
 import messenger from '../basics/messenger.mjs';
+import Log from './log.mjs';
 import Sequencer from './sequencer.mjs';
 import { ACTION, WORKER_TYPE } from '../basics/constants.mjs';
 
@@ -9,9 +10,11 @@ if (!cluster.isMaster) {
   throw new Error('This workerManager should be run as non-worker process');
 }
 
+const log = new Log();
+
 const createWorker = (type) => {
   const exec = WORKER_TYPE.getProperty(type, 'code');
-  console.log(`${new Date().toISOString()}: Starting a new ${WORKER_TYPE.getProperty(type, 'label')}`);
+  log.info(`starting a new ${WORKER_TYPE.getProperty(type, 'label')}`);
   cluster.setupMaster({
     exec
   });
@@ -37,8 +40,7 @@ export default class {
    * @returns { Promise } The handler as a promise
    */
   #_createMessageBus = (processId) => async (message) => {
-    // TODO: remove logging
-    console.log(`${new Date().toISOString()}: Worker ${processId} delivered a message ('${ACTION.getProperty(message.action, 'label')}')`);
+    log.debug(`Worker ${processId} delivered a message ('${ACTION.getProperty(message.action, 'label')}')`);
     let foundCandidate;
 
     const { action, payload } = message;
@@ -86,7 +88,8 @@ export default class {
       case ACTION.CACHE_GET:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
         if (foundCandidate) {
-          const response = await messenger({ action, payload}, foundCandidate.worker).catch((err) => console.log('no-cache', err));
+          const response = await messenger({ action, payload}, foundCandidate.worker)
+            .catch((error) => log.warn('no return message from cache', error));
           if (response) {
             const { action, payload } = response;
             foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);
@@ -145,7 +148,8 @@ export default class {
       return false;
     }
     await this.#_sequencer.start();
-    const task = await messenger({ action: ACTION.QUEUE_GET }, foundSoloCandidate.worker).catch((err) => console.log('no-task', err));
+    const task = await messenger({ action: ACTION.QUEUE_GET }, foundSoloCandidate.worker)
+      .catch((error) => log.warn('no return message from queue', error));
     this.#_sequencer.done();
     if (task && task.action === ACTION.QUEUE_GOT && task.payload !== null) {
       foundConverterCandidate.worker.send(task);

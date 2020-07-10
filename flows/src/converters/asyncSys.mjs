@@ -8,12 +8,18 @@ const call = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('next should be a function'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.call === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.call === 'undefined' ||
+      typeof context.flow.file.tempPathOrg !== 'string') {
     return Promise.reject(new TypeError('A context must have a call!'));
   }
 
   const { call } = context.flow;
-  const { exec, options, onSuccess = () => Promise.resolve(), onFailure = () => Promise.resolve() } = call;
+  const {
+    exec, options,
+    onSuccess = () => Promise.resolve(),
+    onFailure = () => Promise.resolve()
+  } = call;
 
   if (typeof exec !== 'string') {
     return Promise.reject(new TypeError('A call must have an exec of type string'));

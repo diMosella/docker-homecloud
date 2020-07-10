@@ -8,7 +8,9 @@ const convert = async (context, next) => {
   if (typeof next !== 'function') {
     return Promise.reject(new TypeError('next should be a function'));
   }
-  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' || typeof context.flow.file.tempPathOrg !== 'string') {
+  if (!context || typeof context.flow === 'undefined' ||
+      typeof context.flow.file === 'undefined' ||
+      typeof context.flow.file.tempPathOrg !== 'string') {
     return Promise.reject(new TypeError('A context temp path must be of type string!'));
   }
 
@@ -19,7 +21,10 @@ const convert = async (context, next) => {
 
   context.flow.call = {
     exec: 'ocrmypdf',
-    options: ['--rotate-pages', '--deskew', '-l', 'nld+eng', '--clean', path.resolve(tempPathOrg), tempPathEdit],
+    options: [
+      '--rotate-pages', '--deskew', '-l', 'nld+eng', '--clean',
+      path.resolve(tempPathOrg), tempPathEdit
+    ],
     onSuccess: (_outLog) => {
       context.flow.file.tempPathEdit = tempPathEdit;
       return Promise.resolve();

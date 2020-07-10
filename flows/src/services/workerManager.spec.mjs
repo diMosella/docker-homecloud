@@ -54,9 +54,9 @@ describe('(Service) workerManager', () => {
       }
       processRef.send({ action: ACTION.AVAILABLE, shouldEcho: true });
       processRef.send({ action: ACTION.PING, shouldEcho: true });
+      processRef.send({ action: ACTION.QUEUE_PROCESS, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_LOCK, payload: { queueId: 0 }, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_FINISH, payload: { queueId: 0 }, shouldEcho: true });
-      processRef.send({ action: ACTION.QUEUE_PROCESS, shouldEcho: true });
       processRef.send({ action: ACTION.QUEUE_FINAL, shouldEcho: true });
       processRef.send({ action: ACTION.CACHE_GET, shouldEcho: true });
       await sleeper(0.1, TIME_UNIT.SECOND).sleep;

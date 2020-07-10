@@ -2,8 +2,6 @@
 
 import { EnumProperties, enumerate } from './enum.mjs';
 
-const isTest = process.env.NODE_ENV === 'test';
-
 const USERS = {
   A: 'Abigail',
   W: 'Wim',
@@ -11,6 +9,21 @@ const USERS = {
 };
 
 export const { instance: FILE_CATEGORY, class: FileCategoryEnum } = enumerate('media', 'docs');
+
+export const { instance: LOG_LEVEL, class: LogLevelEnum } = enumerate(
+  new EnumProperties('error', 'error'),
+  new EnumProperties('warn', 'warn'),
+  new EnumProperties('info', 'info'),
+  new EnumProperties('debug', 'debug')
+);
+
+export const { instance: ENVIRONMENT, class: EnvironmentEnum } = enumerate(
+  new EnumProperties('production', 'production'),
+  new EnumProperties('test', 'test'),
+  new EnumProperties('development', 'development')
+);
+
+const isTest = process.env.NODE_ENV === ENVIRONMENT.getProperty(ENVIRONMENT.TEST, 'label');
 
 export const { instance: WORKER_TYPE, class: WorkerTypeEnum } = enumerate(
   new EnumProperties('server', 'web server worker', !isTest

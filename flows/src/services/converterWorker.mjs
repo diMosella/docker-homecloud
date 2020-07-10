@@ -4,6 +4,7 @@ import Flow from './flow.mjs';
 import cloud from '../tasks/cloud.mjs';
 import exif from '../converters/exif.mjs';
 import utils from '../tasks/utils.mjs';
+import Log from '../services/log.mjs';
 import { ACTION } from '../basics/constants.mjs';
 
 const convertFile = async (context) => {
@@ -22,6 +23,7 @@ const convertFile = async (context) => {
     .add(cloud.uploadEdit)
   // // .add(addTags)
     .go(context);
+  await utils.cleanTempFolder(context, () => {});
   outbox({ action: ACTION.QUEUE_FINISH, payload: { queueId: context.queueId } });
   outbox({ action: ACTION.AVAILABLE });
 };
@@ -46,9 +48,11 @@ const inbox = (message) => {
 const start = () => {
   const processId = process.pid;
 
+  const log = new Log();
+
   process.on('message', inbox);
 
-  console.log(`${new Date().toISOString()}: Worker converter ${processId} at ${Date.now()}`);
+  log.info(`Worker converter ${processId} at ${Date.now()}`);
   outbox({ action: ACTION.AVAILABLE });
   return {
     close: () => {

@@ -29,7 +29,7 @@ const convert = (step) => {
     const clean = async () => {
       const tempPathIntermediate = path.resolve(`${tempPathEdit}.pass-0.log`);
       await asyncUnlink(path.resolve(tempPathIntermediate))
-        .catch((_error) => null);
+        .catch((_error) => Promise.resolve());
       return await asyncUnlink(path.resolve(`${tempPathIntermediate}.mbtree`))
         .catch((_error) => Promise.resolve());
     };

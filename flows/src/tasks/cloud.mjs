@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import NextcloudClient from 'nextcloud-link';
+import Log from '../services/log.mjs';
 import messenger from '../basics/messenger.mjs';
 import { cloud as CloudCredentials } from '../basics/credentials.mjs';
 import { tempFolder } from '../basics/config.mjs';
@@ -11,6 +12,8 @@ import { ACTION, TIME_UNIT } from '../basics/constants.mjs';
 
 const client = new NextcloudClient(CloudCredentials);
 const asyncAccess = promisify(fs.access);
+
+const log = new Log();
 
 const existsInternal = async (filePath) => {
   const existError = await asyncAccess(path.resolve(filePath), fs.constants.F_OK).catch(error => {
@@ -28,7 +31,7 @@ const existsExternal = async (nodePath) => {
   }
 
   const inCache = await messenger({ action: ACTION.CACHE_GET, payload: { nodePath } }, null, 0.2, TIME_UNIT.SECOND)
-    .catch((err) => console.log('no-cache', err));
+    .catch((err) => log.warn('no return message from cache', err));
   if (!inCache || inCache.action !== ACTION.CACHE_GOT || inCache.payload === null) {
     if (!(await client.exists(path.resolve(nodePath)))) {
       return Promise.resolve(false);

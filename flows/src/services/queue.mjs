@@ -37,12 +37,10 @@ export default class Queue {
   };
 
   #_generatorFunction = function* () {
-    let index;
     for (let retryCounter = 0; retryCounter < 2; retryCounter++) {
-      index = 0;
-      for (index in this.#_queue) {
-        if (this.#_queue[index].state === STATE.QUEUED) {
-          yield this.#_queue[index++];
+      for (const item of this.#_queue) {
+        if (item.state === STATE.QUEUED) {
+          yield item;
         }
       }
     }

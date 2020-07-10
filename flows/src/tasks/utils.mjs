@@ -1,6 +1,8 @@
 'use strict';
 
+import fs from 'fs';
 import path from 'path';
+import { promisify } from 'util';
 import Flow from '../services/flow.mjs';
 import improve from '../converters/imagemagick.mjs';
 import raw from '../converters/rawtherapee.mjs';
@@ -8,6 +10,8 @@ import reEncode from '../converters/ffmpeg.mjs';
 import ocr from '../converters/tesseract.mjs';
 import { basePaths } from '../basics/config.mjs';
 import { SOURCE, CAMERA, MONTH, FILE_CATEGORY } from '../basics/constants.mjs';
+
+const asyncUnlink = promisify(fs.unlink);
 
 const cleanExifDate = (exifDate) => exifDate
   ? exifDate.replace(/^(\d{4}):(\d{2}):(\d{2})\s/, '$1-$2-$3T').replace(/\s+DST\s*$/i, '')
@@ -109,8 +113,6 @@ const deriveInfo = async (context, next) => {
     tags.push(SOURCE.getProperty('EXT', 'label'));
   }
 
-  console.log('Derived :: source:', `${name} -> ${source}`);
-
   const year = dates[0].getFullYear();
   const month = (dates[0].getMonth() + 1).toString().padStart(2, '0');
   const date = dates[0].getDate().toString().padStart(2, '0');
@@ -159,8 +161,24 @@ const convert = async (context, next) => {
   await next();
 };
 
+const cleanTempFolder = async (context, next) => {
+  if (typeof next !== 'function') {
+    return Promise.reject(new TypeError('A next item must be a function!'));
+  }
+  if (!context || typeof context.flow === 'undefined' || typeof context.flow.file === 'undefined' ||
+      typeof context.flow.file.tempPathOrg !== 'string') {
+    return Promise.reject(new TypeError('A context flow must contain file information'));
+  }
+  const { tempPathOrg, tempPathEdit } = context.flow.file;
+  await asyncUnlink(path.resolve(tempPathOrg)).catch((_error) => Promise.resolve());
+  if (tempPathEdit) {
+    await asyncUnlink(path.resolve(tempPathEdit)).catch((_error) => Promise.resolve());
+  }
+};
+
 export default {
   checkForChanges,
   deriveInfo,
-  convert
+  convert,
+  cleanTempFolder
 };

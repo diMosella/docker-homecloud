@@ -5,6 +5,7 @@ import path from 'path';
 import Flow from './flow.mjs';
 import Queue from './queue.mjs';
 import Cache from './cache.mjs';
+import Log from './log.mjs';
 import cloud from '../tasks/cloud.mjs';
 import utils from '../tasks/utils.mjs';
 
@@ -85,13 +86,14 @@ const queueAction = (action) => {
   }
 };
 
+const log = new Log();
 const queue = new Queue(queueAction);
 const cache = new Cache();
 const taskList = [];
 
 const queueChanges = (changes, location, scanTimestamp) => {
   if (queue.isProcessing === true) {
-    console.log('already qC');
+    log.debug('no changes added to queue because of processing');
     return;
   }
   for (const change of changes) {
@@ -113,7 +115,7 @@ const queueChanges = (changes, location, scanTimestamp) => {
 
 const scanLocation = async (location, lastScan) => {
   if (queue.isProcessing === true) {
-    console.log('already sL');
+    log.debug(`no scan of location ${location} because of processing`);
     return Promise.resolve();
   }
   const scanTimestamp = Date.now();
@@ -144,9 +146,10 @@ const start = () => {
     const lastScan = new LastScan();
     const task = cron.schedule(item.frequency, () => scanLocation(item.location, lastScan), cronOptions);
     taskList.push(task);
+    scanLocation(item.location, lastScan);
   }
 
-  console.log(`${new Date().toISOString()}: Worker solo ${processId} at ${Date.now()}`);
+  log.info(`Worker solo ${processId} at ${Date.now()}`);
   outbox({ action: ACTION.AVAILABLE });
 
   return {

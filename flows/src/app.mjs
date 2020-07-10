@@ -3,15 +3,18 @@
 import { cpus } from 'os';
 import cluster from 'cluster';
 import sleeper from './basics/sleeper.mjs';
+import Log from './services/log.mjs';
 import WorkerManager from './services/workerManager.mjs';
-import { RETRY_DELAY, RETRY_MAX_COUNT, TIME_UNIT, WORKER_TYPE } from './basics/constants.mjs';
+import { ENVIRONMENT, RETRY_DELAY, RETRY_MAX_COUNT, TIME_UNIT, WORKER_TYPE } from './basics/constants.mjs';
 
 const start = () => {
   if (!cluster.isMaster) {
     return Promise.reject(new TypeError('This app should be run as non-worker process'));
   }
 
-  console.log(`${new Date().toISOString()}: Delegator ${process.pid} is running`);
+  const log = new Log();
+
+  log.debug(`Delegator ${process.pid} is running`);
 
   const cpuCount = cpus().length;
   const retries = Object.values(WORKER_TYPE).reduce((acumm, type) => Object.assign(acumm, { [type]: 0 }), {});
@@ -46,22 +49,18 @@ const start = () => {
   workerManager.add(WORKER_TYPE.SERVER);
 
   cluster.on('online', (worker) => {
-    console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} is online`);
+    log.info(`Worker ${worker.process.pid} is online`);
   });
 
   cluster.on('exit', (worker, code, signal) => {
     let isCausedByError = false;
-    for (const id in cluster.workers) {
-      const processId = cluster.workers[id].process.pid;
-      console.log('remaining', processId, WORKER_TYPE.getProperty(workerManager.getTypeOf(processId), 'label'));
-    }
     if (signal) {
-      console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} was killed by signal: ${signal}`);
+      log.info(`Worker ${worker.process.pid} was killed by signal: ${signal}`);
     } else if (code !== 0) {
-      console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} exited with error: ${code}`);
+      log.info(`Worker ${worker.process.pid} exited with error: ${code}`);
       isCausedByError = true;
     } else {
-      console.log(`${new Date().toISOString()}: Worker ${worker.process.pid} finished`);
+      log.info(`Worker ${worker.process.pid} finished`);
     }
     const type = workerManager.getTypeOf(worker.process.pid);
     workerManager.remove(worker.process.pid);
@@ -80,6 +79,6 @@ export default {
   start
 };
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== ENVIRONMENT.getProperty(ENVIRONMENT.TEST, 'label')) {
   start();
 }

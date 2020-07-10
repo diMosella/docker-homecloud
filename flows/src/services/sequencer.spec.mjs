@@ -6,25 +6,25 @@ import Sequencer from './sequencer.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';
 
-const expect = chai.expect;
+
 const assert = chai.assert;
 
 describe('(Service) sequencer', () => {
   const testSequencer = new Sequencer();
 
   it('should be a class.', () => {
-    expect(testSequencer).to.be.a('object');
-    expect(testSequencer).to.be.an.instanceof(Sequencer);
+    assert.typeOf(testSequencer, 'object');
+    assert.instanceOf(testSequencer, Sequencer);
   });
 
   describe('should have', () => {
     it('public method start', () => {
-      expect(testSequencer.start).to.be.a('function');
-      expect(testSequencer.start()).to.be.a('promise');
+      assert.typeOf(testSequencer.start, 'function');
+      assert.typeOf(testSequencer.start(), 'promise');
     });
     it('public method done', () => {
-      expect(testSequencer.done).to.be.a('function');
-      expect(testSequencer.done()).to.be.a('undefined');
+      assert.typeOf(testSequencer.done, 'function');
+      assert.typeOf(testSequencer.done(), 'undefined');
     });
   });
 

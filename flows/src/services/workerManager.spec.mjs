@@ -7,7 +7,7 @@ import WorkerManager from './workerManager.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { ACTION, TIME_UNIT, WORKER_TYPE } from '../basics/constants.mjs';
 
-const expect = chai.expect;
+
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {
@@ -34,13 +34,13 @@ describe('(Service) workerManager', () => {
 
   it('should be a class.', () => {
     testManager = new WorkerManager(processes);
-    expect(testManager).to.be.a('object');
-    expect(testManager).to.be.an.instanceof(WorkerManager);
+    assert.typeOf(testManager, 'object');
+    assert.instanceOf(testManager, WorkerManager);
   });
 
   describe('should have', () => {
     it('public method add', async () => {
-      expect(testManager.add).to.be.a('function');
+      assert.typeOf(testManager.add, 'function');
       assert.throws(testManager.add, TypeError);
       assert.throws(() => testManager.add(17), TypeError);
       testManager.add(WORKER_TYPE.SOLO);
@@ -65,18 +65,18 @@ describe('(Service) workerManager', () => {
       assert.equal(resetRetryStub.callCount, 1);
     });
     it('public method getTypeOf', () => {
-      expect(testManager.getTypeOf).to.be.a('function');
+      assert.typeOf(testManager.getTypeOf, 'function');
       let count = 0;
       for (const id in cluster.workers) {
         const processId = cluster.workers[id].process.pid;
-        expect(testManager.getTypeOf(processId)).to.eql(WORKER_TYPE.SOLO);
+        assert.equal(testManager.getTypeOf(processId), WORKER_TYPE.SOLO);
         count++;
       }
-      expect(count).to.eql(1);
+      assert.equal(count, 1);
     });
 
     it('public method assignTask', () => {
-      expect(testManager.assignTask).to.be.a('function');
+      assert.typeOf(testManager.assignTask, 'function');
       let processId;
       for (const id in cluster.workers) {
         processId = cluster.workers[id].process.pid;
@@ -85,13 +85,13 @@ describe('(Service) workerManager', () => {
     });
 
     it('public method remove', () => {
-      expect(testManager.remove).to.be.a('function');
+      assert.typeOf(testManager.remove, 'function');
       let processId;
       for (const id in cluster.workers) {
         processId = cluster.workers[id].process.pid;
       }
       testManager.remove(processId);
-      expect(testManager.getTypeOf(processId)).to.eql(null);
+      assert.isNull(testManager.getTypeOf(processId));
     });
   });
 });

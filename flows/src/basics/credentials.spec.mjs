@@ -3,13 +3,13 @@
 import chai from 'chai';
 import { cloud } from './credentials.mjs';
 
-const expect = chai.expect;
+const assert = chai.assert;
 
 describe('(Basics) credentials', () => {
   it('should have cloud data.', () => {
-    expect(cloud).to.be.a('object');
-    expect(cloud.username).to.be.a('string');
-    expect(cloud.password).to.be.a('string');
-    expect(cloud.url).to.be.a('string');
+    assert.typeOf(cloud, 'object');
+    assert.typeOf(cloud.username, 'string');
+    assert.typeOf(cloud.password, 'string');
+    assert.typeOf(cloud.url, 'string');
   });
 });

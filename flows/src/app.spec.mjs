@@ -7,7 +7,6 @@ import app from './app.mjs';
 import WorkerManager from './services/workerManager.mjs';
 import { WORKER_TYPE } from './basics/constants.mjs';
 
-const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(App) app.start', () => {
@@ -29,7 +28,7 @@ describe('(App) app.start', () => {
   });
 
   it('should be a function', () => {
-    expect(app.start).to.be.a('function');
+    assert.typeOf(app.start, 'function');
     app.start();
     assert.equal(addStub.callCount, 2);
     assert.equal(addStub.getCall(0).firstArg, WORKER_TYPE.SOLO);

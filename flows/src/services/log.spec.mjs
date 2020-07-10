@@ -94,7 +94,8 @@ describe('(Service) log', () => {
               assert.equal(
                 stubs[stubIndex].callCount,
                 expectedCallCount,
-                `expected log.${methodLabel} to trigger ${stubs[stubIndex].name} ${expectedCallCount} times but was ${stubs[stubIndex].callCount}`
+                `expected log.${methodLabel} to trigger ${stubs[stubIndex].name} \
+                ${expectedCallCount} times but was ${stubs[stubIndex].callCount}`
               );
               if (expectedCallCount > 0) {
                 const results = stubs[stubIndex].getCall(0).args

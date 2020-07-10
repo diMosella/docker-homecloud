@@ -6,7 +6,6 @@ import messenger from './messenger.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';
 
-const expect = chai.expect;
 const assert = chai.assert;
 
 describe('(Basics) messenger', () => {
@@ -19,17 +18,17 @@ describe('(Basics) messenger', () => {
     childProcess = fork('src/basics/messenger.spec.sidecar.mjs');
     await sleeper(0.15, TIME_UNIT.SECOND).sleep;
     const transporter = messenger({ type: 'request' }, childProcess);
-    expect(transporter).to.be.a('promise');
+    assert.typeOf(transporter, 'promise');
     const response = await transporter;
-    expect(response).to.eql({ type: 'response' });
+    assert.deepEqual(response, { type: 'response' });
   });
   it('should be able to reject (to childProcess)', async () => {
     childProcess = fork('src/basics/messenger.spec.sidecar.mjs');
     await sleeper(0.15, TIME_UNIT.SECOND).sleep;
     const transporter = messenger({ type: 'ping' }, childProcess);
-    expect(transporter).to.be.a('promise');
-    await transporter.catch((err) => {
-      expect(err.message).to.eql('no response message');
+    assert.typeOf(transporter, 'promise');
+    await transporter.catch((error) => {
+      assert.equal(error.message, 'no response message');
     });
   });
   it('should return a promise (to same process)', async () => {
@@ -40,9 +39,9 @@ describe('(Basics) messenger', () => {
     };
     process.once('message', respond);
     const transporter = messenger({ type: 'request' });
-    expect(transporter).to.be.a('promise');
+    assert.typeOf(transporter, 'promise');
     const response = await transporter;
-    expect(response).to.eql({ type: 'echo' });
+    assert.deepEqual(response, { type: 'echo' });
   });
   it('should return a promise (from childProcess)', (done) => {
     const toCheck = {
@@ -65,8 +64,8 @@ describe('(Basics) messenger', () => {
           toCheck.request = true;
           break;
         case 'type':
-          expect(msg.value).to.eql('object');
-          assert.ok(msg.isPromise);
+          assert.equal(msg.value, 'object');
+          assert.isTrue(msg.isPromise);
           toCheck.type = true;
           break;
         case 'response':

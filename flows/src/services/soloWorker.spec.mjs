@@ -10,13 +10,13 @@ import Queue from './queue.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { ACTION, TIME_UNIT } from '../basics/constants.mjs';
 
-const expect = chai.expect;
+
 const assert = chai.assert;
 const { start } = soloWorker;
 
 describe('(Service) soloWorker.start', () => {
   it('should be a function', async () => {
-    expect(start).to.be.a('function');
+    assert.typeOf(start, 'function');
   });
 
   describe('which should start a solo worker', () => {

@@ -1,8 +1,8 @@
 'use strict';
 
-import path from 'path';
+// import path from 'path';
 import chai from 'chai';
-import sinon from 'sinon';
+// import sinon from 'sinon';
 import cloud from './cloud.mjs';
 
 const assert = chai.assert;

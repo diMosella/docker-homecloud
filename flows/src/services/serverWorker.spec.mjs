@@ -8,14 +8,14 @@ import sleeper from '../basics/sleeper.mjs';
 import { ACTION, TIME_UNIT } from '../basics/constants.mjs';
 
 chai.use(chaiHTTP);
-const expect = chai.expect;
+
 const assert = chai.assert;
 const request = chai.request;
 const { start } = serverWorker;
 
 describe('(Service) serverWorker.start', () => {
   it('should be a function', async () => {
-    expect(start).to.be.a('function');
+    assert.typeOf(start, 'function');
   });
 
   describe('which should start a http server', () => {
@@ -40,14 +40,14 @@ describe('(Service) serverWorker.start', () => {
       assert.ok(sendStub.calledOnceWithExactly({ action: ACTION.AVAILABLE }));
       const response = await request(testWorker)
         .get('/index.json');
-      expect(response.statusCode).to.eql(200);
-      expect(response.body).to.eql({ success: true });
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.body, { success: true });
     });
     it('should return status info (true)', async () => {
       const response = await request(testWorker)
         .get('/status');
-      expect(response.statusCode).to.eql(200);
-      expect(response.body).to.eql({ success: true });
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.body, { success: true });
     });
   });
 });

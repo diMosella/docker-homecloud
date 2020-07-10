@@ -3,28 +3,28 @@
 import chai from 'chai';
 import { watch, tempFolder, basePaths } from './config.mjs';
 
-const expect = chai.expect;
+const assert = chai.assert;
 
 describe('(Basics) config', () => {
   it('should have a watch config.', () => {
-    expect(watch).to.be.a('array');
+    assert.instanceOf(watch, Array);
     for (const watchItem of watch) {
-      expect(watchItem).to.be.a('object');
-      expect(watchItem.frequency).to.be.a('string');
-      expect(watchItem.locations).to.be.an.instanceof(Array);
+      assert.typeOf(watchItem, 'object');
+      assert.typeOf(watchItem.frequency, 'string');
+      assert.instanceOf(watchItem.locations, Array);
     }
   });
 
   it('should have a tempfolder config.', () => {
-    expect(tempFolder).to.be.a('string');
+    assert.typeOf(tempFolder, 'string');
   });
 
   it('should have a basePaths config.', () => {
-    expect(basePaths).to.be.a('object');
+    assert.typeOf(basePaths, 'object');
     for (const category of Object.values(basePaths)) {
-      expect(category).to.be.a('object');
+      assert.typeOf(category, 'object');
       for (const path of Object.values(category)) {
-        expect(path).to.be.a('string');
+        assert.typeOf(path, 'string');
       }
     }
   });

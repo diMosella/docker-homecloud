@@ -32,24 +32,44 @@ export default class Log {
   };
 
   error (message, ...additionalInfo) {
-    console.error(this.#_format(Log.prototype.error.name, message), additionalInfo);
+    console.error(
+      this.#_format(Log.prototype.error.name, message),
+      additionalInfo.length > 0
+        ? additionalInfo
+        : ''
+    );
   };
 
   warn (message, ...additionalInfo) {
     if (this.#_level >= LOG_LEVEL.WARN) {
-      console.warn(this.#_format(Log.prototype.warn.name, message), additionalInfo);
+      console.warn(
+        this.#_format(Log.prototype.warn.name, message),
+        additionalInfo.length > 0
+          ? additionalInfo
+          : ''
+      );
     }
   };
 
   info (message, ...additionalInfo) {
     if (this.#_level >= LOG_LEVEL.INFO) {
-      console.info(this.#_format(Log.prototype.info.name, message), additionalInfo);
+      console.info(
+        this.#_format(Log.prototype.info.name, message),
+        additionalInfo.length > 0
+          ? additionalInfo
+          : ''
+      );
     }
   };
 
   debug (message, ...additionalInfo) {
     if (this.#_level >= LOG_LEVEL.DEBUG) {
-      console.debug(this.#_format(Log.prototype.debug.name, message), additionalInfo);
+      console.debug(
+        this.#_format(Log.prototype.debug.name, message),
+        additionalInfo.length > 0
+          ? additionalInfo
+          : ''
+      );
     }
   };
 }

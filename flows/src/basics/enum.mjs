@@ -59,8 +59,6 @@ export class Enum {
 };
 
 export class EnumProperties {
-  // TODO: how to make the fields customizable
-  // TODO: how to make typed enums
   /**
    * Creates a frozen EnumProperties instance
    * @param { string } value

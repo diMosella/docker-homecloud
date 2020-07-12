@@ -253,14 +253,29 @@ const uploadEdit = async (context, next) => {
 };
 
 const getTag = async (tagLabel) => {
-  await client.put('/remote.php/dav/systemtags/', JSON.stringify({
-    name: tagLabel,
-    userVisible: true,
-    userAssignable: true,
-    canAssign: true
-  })).catch((error) => {
-    log.debug('retrieving tag did not succeed', error);
+  console.log(tagLabel);
+  // console.log(client.echoFunc('een test'));
+  // console.log(JSON.stringify(client, null, 2));
+  const result = await client.getFolderProperties('/remote.php/dav/systemtags/1'
+  ,['id', 'display-name', 'user-visible', 'user-assignable', 'can-assign'].map((tagInfo) =>
+    ({
+      namespace: 'http://owncloud.org/ns',
+      namespaceShort: 'oc',
+      element: tagInfo
+    })
+  // JSON.stringify({
+    // name: tagLabel,
+    // userVisible: true,
+    // userAssignable: true,
+    // canAssign: true
+  // })
+  ))
+  .catch((error) => {
+    log.info('retrieving tag did not succeed', error);
+    return Promise.resolve({ error, result: 'nope' });
   });
+  console.log(JSON.stringify(result, null, 2));
+  return Promise.resolve({ error: null, result });
 };
 
 const addTags = async (context, next) => {
@@ -273,10 +288,12 @@ const addTags = async (context, next) => {
     return Promise.reject(new TypeError('The file derived info must be set!'));
   }
   await client.checkConnectivity();
+  // client.echoFunc = (test) => test;
   const { derived } = context.flow.file;
-  derived.tagsOrg.forEach(async (tagLabel) => { // FIXME: foreach doesn't handle async well
+  for (const tagLabel of derived.tagsOrg) {
     const tag = await getTag(tagLabel);
-  });
+    log.info(JSON.stringify(tag, null, 2));
+  }
 };
 
 export default {
@@ -285,5 +302,6 @@ export default {
   downloadFile,
   ensureFolderHierarchy,
   moveOriginal,
-  uploadEdit
+  uploadEdit,
+  addTags
 };

@@ -60,6 +60,18 @@ describe('(Task) cloud', () => {
       await assert.throwsAsync(() => cloud.uploadEdit(context), TypeError);
       await assert.throwsAsync(() => cloud.uploadEdit(null, next), TypeError);
     });
+    it('a public method addTags', async () => {
+      context.flow.file = {
+        derived: {
+          tagsOrg: ['testWim']
+        }
+      };
+      assert.typeOf(cloud.addTags, 'function');
+      await assert.throwsAsync(cloud.addTags, TypeError);
+      await assert.throwsAsync(() => cloud.addTags(context), TypeError);
+      await assert.throwsAsync(() => cloud.addTags(null, next), TypeError);
+      cloud.addTags(context, next);
+    });
   });
 });
 

@@ -2,13 +2,25 @@
 
 // import path from 'path';
 import chai from 'chai';
-// import sinon from 'sinon';
+import sinon from 'sinon';
+import NextcloudClient from 'nextcloud-link';
+
 import cloud from './cloud.mjs';
 
 const assert = chai.assert;
 
 describe('(Task) cloud', () => {
   describe('should have', () => {
+    // const checkConnectivityStub = sinon.fake(() => Promise.resolve(true));
+    // const getFolderFileDetailsStub = sinon.fake(() => Promise.resolve());
+
+    // before(() => {
+    // });
+
+    // after(() => {
+    //   sinon.restore();
+    // });
+
     const context = {
       flow: {
         folder: {
@@ -70,23 +82,6 @@ describe('(Task) cloud', () => {
       await assert.throwsAsync(cloud.addTags, TypeError);
       await assert.throwsAsync(() => cloud.addTags(context), TypeError);
       await assert.throwsAsync(() => cloud.addTags(null, next), TypeError);
-      cloud.addTags(context, next);
     });
   });
 });
-
-//   describe('which calls', () => {
-//     const sysCallStub = sinon.fake();
-
-//     before(() => {
-//       sinon.replace(asyncSys, 'call', sysCallStub);
-//     });
-
-//     after(() => {
-//       sinon.restore();
-//     });
-
-//     it('sysCall', async () => {
-//     });
-//   });
-// });

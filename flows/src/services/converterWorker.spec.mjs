@@ -48,6 +48,9 @@ describe('(Service) converterWorker.start', () => {
     const uploadEditStub = sinon.fake(async (_context, next) => {
       await next();
     });
+    const addTagsStub = sinon.fake(async (_context, next) => {
+      await next();
+    });
     const sendStub = sinon.fake();
 
     before(() => {
@@ -59,6 +62,7 @@ describe('(Service) converterWorker.start', () => {
       sinon.replace(utils, 'cleanTempFolder', cleanTempFolderStub);
       sinon.replace(cloud, 'moveOriginal', moveOriginalStub);
       sinon.replace(cloud, 'uploadEdit', uploadEditStub);
+      sinon.replace(cloud, 'addTags', addTagsStub);
       process.send = sendStub;
     });
 
@@ -81,6 +85,7 @@ describe('(Service) converterWorker.start', () => {
       assert.equal(convertStub.callCount, 1);
       assert.equal(moveOriginalStub.callCount, 1);
       assert.equal(uploadEditStub.callCount, 1);
+      assert.equal(addTagsStub.callCount, 1);
       assert.equal(cleanTempFolderStub.callCount, 1);
       assert.equal(sendStub.callCount, 5);
       assert.strictEqual(sendStub.getCall(0).firstArg.action, ACTION.AVAILABLE);

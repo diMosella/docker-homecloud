@@ -21,7 +21,7 @@ const convertFile = async (context) => {
     .add(utils.convert)
     .add(cloud.moveOriginal)
     .add(cloud.uploadEdit)
-  // // .add(addTags)
+    .add(cloud.addTags)
     .go(context);
   await utils.cleanTempFolder(context, () => {});
   outbox({ action: ACTION.QUEUE_FINISH, payload: { queueId: context.queueId } });

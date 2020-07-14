@@ -5,6 +5,7 @@ import path from 'path';
 import { promisify } from 'util';
 import NextcloudClient from 'nextcloud-link';
 import Log from '../services/log.mjs';
+import cloudTags from './cloudTags.mjs';
 import messenger from '../basics/messenger.mjs';
 import { cloud as CloudCredentials } from '../basics/credentials.mjs';
 import { tempFolder } from '../basics/config.mjs';
@@ -236,46 +237,43 @@ const uploadEdit = async (context, next) => {
   await client.checkConnectivity();
   const { derived, tempPathEdit } = context.flow.file;
   const { nameEdit, pathEdit } = derived;
+  const targetPath = path.resolve(`${pathEdit}/${nameEdit}`);
   await ensureFolderHierarchy(pathEdit);
   // reminder: streaming implies creating an empty file on NextCloud and
   //  adding bytes to it: therefore user should have create AND edit permissions
   const error = await client.uploadFromStream(
-    path.resolve(`${pathEdit}/${nameEdit}`),
+    targetPath,
     fs.createReadStream(tempPathEdit)
   ).catch((error) => {
     log.debug('uploading did not succeed', error);
     return Promise.resolve(error);
   });
   if (error instanceof Error) {
-    return Promise.resolve();
+    return Promise.resolve(error);
   }
+  await client.getFolderFileDetails(targetPath);
   await next();
 };
 
-const getTag = async (tagLabel) => {
-  console.log(tagLabel);
-  // console.log(client.echoFunc('een test'));
-  // console.log(JSON.stringify(client, null, 2));
-  const result = await client.getFolderProperties('/remote.php/dav/systemtags/1'
-  ,['id', 'display-name', 'user-visible', 'user-assignable', 'can-assign'].map((tagInfo) =>
-    ({
-      namespace: 'http://owncloud.org/ns',
-      namespaceShort: 'oc',
-      element: tagInfo
-    })
-  // JSON.stringify({
-    // name: tagLabel,
-    // userVisible: true,
-    // userAssignable: true,
-    // canAssign: true
-  // })
-  ))
-  .catch((error) => {
-    log.info('retrieving tag did not succeed', error);
-    return Promise.resolve({ error, result: 'nope' });
-  });
-  console.log(JSON.stringify(result, null, 2));
-  return Promise.resolve({ error: null, result });
+const _addTags = async (path, tags, existingTags) => {
+  const fileProps = await cloudTags.getFileProps(path)
+    .catch(error => Promise.resolve(error));
+  if (fileProps instanceof Error) {
+    return Promise.resolve(fileProps);
+  }
+  for (const tagLabel of tags) {
+    const tagCandidate = existingTags.find(item => item.name === tagLabel) ||
+      await cloudTags.createTag(tagLabel);
+    if (tagCandidate instanceof Error) {
+      break;
+    }
+    if (!existingTags.some(item => item.name === tagLabel)) {
+      existingTags.push(tagCandidate);
+    }
+    if (!fileProps.tags || !fileProps.tags.some(tag => tag.id === tagCandidate.id)) {
+      await cloudTags.setTag(fileProps.id, tagCandidate.id);
+    }
+  }
 };
 
 const addTags = async (context, next) => {
@@ -287,13 +285,22 @@ const addTags = async (context, next) => {
       typeof context.flow.file.derived === 'undefined') {
     return Promise.reject(new TypeError('The file derived info must be set!'));
   }
-  await client.checkConnectivity();
-  // client.echoFunc = (test) => test;
-  const { derived } = context.flow.file;
-  for (const tagLabel of derived.tagsOrg) {
-    const tag = await getTag(tagLabel);
-    log.info(JSON.stringify(tag, null, 2));
+
+  const existingTags = await cloudTags.getTags();
+  if (existingTags instanceof Error) {
+    return Promise.resolve(existingTags);
   }
+
+  const { derived } = context.flow.file;
+  const { nameOrg, pathOrg, nameEdit, pathEdit, tagsOrg, tagsEdit } = derived;
+
+  const fileOrg = path.resolve(`${pathOrg}/${nameOrg}`);
+  const fileEdit = path.resolve(`${pathEdit}/${nameEdit}`);
+
+  await _addTags(fileOrg, tagsOrg);
+  await _addTags(fileEdit, tagsEdit);
+
+  await next();
 };
 
 export default {

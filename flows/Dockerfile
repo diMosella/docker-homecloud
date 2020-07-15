@@ -1,4 +1,9 @@
-FROM node:alpine
+FROM node:alpine AS build
+WORKDIR /src
+COPY src/package*.json ./
+# create a new layer, thus caching
+RUN npm install
+
 
 # install file, exiftool, imagemagick, ffmpeg and set timezone
 # each RUN creates a seperate layer

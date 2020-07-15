@@ -18,7 +18,7 @@ export const watch = [
 /**
  * Place to temporarily store intermediate files necessary for processing
  */
-export const tempFolder = '/temp';
+export const tempFolder = process.env.CLOUD_TEMP || '/temp';
 
 /**
  * Location to publish processed files

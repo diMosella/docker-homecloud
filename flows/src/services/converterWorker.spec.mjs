@@ -11,7 +11,6 @@ import utils from '../tasks/utils.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { ACTION, TIME_UNIT } from '../basics/constants.mjs';
 
-
 const assert = chai.assert;
 const { start } = converterWorker;
 

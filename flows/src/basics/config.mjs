@@ -18,7 +18,7 @@ export const watch = [
 /**
  * Place to temporarily store intermediate files necessary for processing
  */
-export const tempFolder = '/home/wim/temp';
+export const tempFolder = '/temp';
 
 /**
  * Location to publish processed files

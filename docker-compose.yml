@@ -50,6 +50,19 @@ services:
       - cloud
     volumes:
       - secure_data:/data/
+  flows:
+    container_name: flows-services
+    hostname: flows-services
+    image: dimosella/flows:latest
+    stdin_open: true
+    tty: true
+    restart: always
+    env_file:
+      - flw.env
+    networks:
+      - cloud
+    #shm_size:
+    #  - '2gb'
   backup:
     container_name: backup-services
     hostname: backup-services

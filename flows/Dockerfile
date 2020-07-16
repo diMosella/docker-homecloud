@@ -5,6 +5,7 @@ COPY ./package*.json ./
 RUN npm install
 # RUN npm ci --only=production
 COPY ./src/ ./src/
+COPY ./rollup.config.js ./
 RUN npm run build
 
 FROM node:alpine

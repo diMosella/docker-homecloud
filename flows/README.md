@@ -10,9 +10,10 @@
 1. Exiftool
 2. Imagemagick
 3. Generators (JS, to control maximum filehandles)
-4. ffmpeg (webm / vpx)
+4. ffmpeg
+5. OCRMyPDF
 
-## FFmpeg
+## Ffmpeg
 
 - See: https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Video_codecs#Choosing_a_video_codec
 

@@ -1,7 +1,7 @@
 ## Nextcloud and BitWarden Docker installation
 
 Nextcloud and Bitwarden Docker installation will install Nextcloud and Bitwarden_rs to your server running them in Docker containers.
-Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then OnlyOffice launched a new repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud](https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud)
+Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then NextCloud and OnlyOffice provided a better integration / installation via Apps.
 Now, the instructions (like adding fonts) are from [Nextcloud DocumentServer app](https://github.com/nextcloud/documentserver_community).
 For instruction on Restic (for backup) see [Restic documentation](https://restic.readthedocs.io/en/latest/index.html)
 
@@ -39,11 +39,21 @@ cd docker-homecloud
 
 2.7 Set `TOKEN` in `bu.env`
 
-3. Build the backup container
+2.8 Set `CLOUD_USER` in `flw.env`
+
+2.9 Set `CLOUD_PWD` in `flw.env`
+
+2.10 Set `CLOUD_URL` in `flw.env`
+
+2.11 Set `CLOUD_TEMP` in `flw.env`
+
+3. Build the containers
 
 3.1 Run ``build.sh`` from ``backup``
 
-3. Run Docker Compose:
+3.2 Run ``build.sh`` from ``flows``
+
+4. Run Docker Compose:
 
 ```
 docker-compose up -d
@@ -52,22 +62,11 @@ docker-compose up -d
 
 **Please note**: you might need to wait a couple of minutes when all the containers are up and running after the above command.
 
-4. Now launch the browser and enter the webserver address. The NextCloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
+7. Now launch the browser and enter the webserver address. The NextCloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
+
+8. Install the necessary apps in NextCloud:
+
+  - Community Document Server
+  - ONLYOFFICE
 
 Now you can enter Nextcloud and create a new document. It will be opened in ONLYOFFICE Document Server.
-
-## Project Information
-
-Official website: [http://www.onlyoffice.org](http://onlyoffice.org "http://www.onlyoffice.org")
-
-Code repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud "https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud")
-
-SaaS version: [http://www.onlyoffice.com](http://www.onlyoffice.com "http://www.onlyoffice.com")
-
-## User Feedback and Support
-
-If you have any problems with or questions about [ONLYOFFICE Document Server][2], please visit our official forum to find answers to your questions: [dev.onlyoffice.org][1] or you can ask and answer ONLYOFFICE development questions on [Stack Overflow][3].
-
-  [1]: http://dev.onlyoffice.org
-  [2]: https://github.com/ONLYOFFICE/DocumentServer
-  [3]: http://stackoverflow.com/questions/tagged/onlyoffice

@@ -2,7 +2,8 @@ FROM node:alpine AS build
 WORKDIR /home/flows
 COPY ./package*.json ./
 # create a new layer, thus caching
-RUN npm ci --only=production
+RUN npm install
+# RUN npm ci --only=production
 COPY ./src/ ./src/
 RUN npm run build
 

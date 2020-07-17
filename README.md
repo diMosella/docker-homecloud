@@ -70,3 +70,8 @@ docker-compose up -d
   - ONLYOFFICE
 
 Now you can enter Nextcloud and create a new document. It will be opened in ONLYOFFICE Document Server.
+
+9. It is possible that there is a mention of trusted domains or HTTP 400 (Bad request)
+
+  - check `sudo docker exec -u www-data -ti cloud-server php occ config:system:get trusted_domains` if domain and nginx-server are listed, otherwise:
+  - `sudo docker exec -u www-data -ti cloud-server php occ config:system:set trusted_domains 2 --value=nginx-server`

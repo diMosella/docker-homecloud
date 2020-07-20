@@ -13,6 +13,7 @@ FROM node:alpine
 # each RUN creates a seperate layer
 RUN apk add --update --no-cache \
     exiftool \
+    rawtherapee \
     imagemagick \
     ffmpeg \
     ocrmypdf \

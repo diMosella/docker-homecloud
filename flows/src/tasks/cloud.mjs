@@ -32,8 +32,7 @@ const existsExternal = async (nodePath) => {
   }
 
   const inCache = await messenger(
-    { action: ACTION.CACHE_GET, payload: { nodePath } },
-    null, 0.2, TIME_UNIT.SECOND
+    { action: ACTION.CACHE_GET, payload: { nodePath } }, null
   ).catch((error) => log.warn('no return message from cache', error));
   if (!inCache || inCache.action !== ACTION.CACHE_GOT || inCache.payload === null) {
     if (!(await client.exists(path.resolve(nodePath)))) {
@@ -50,7 +49,7 @@ const existsExternal = async (nodePath) => {
       if (!inCache.payload) {
         const nowInCache = await messenger(
           { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
-          null, 1, TIME_UNIT.SECOND
+          null, 5, TIME_UNIT.SECOND
         ).catch((error) => log.warn('no return message from cache', error));
         if (!nowInCache || nowInCache.action !== ACTION.CACHE_HEARD ||
             nowInCache.payload === null) {
@@ -75,8 +74,7 @@ const ensureFolderHierarchy = async (folderPath) => {
   const precedingParts = [];
   for (const nodeName of pathParts) {
     const cacheResponse = await messenger(
-      { action: ACTION.CACHE_GET, payload: { nodePath: '/' } },
-      null, 0.2, TIME_UNIT.SECOND
+      { action: ACTION.CACHE_GET, payload: { nodePath: '/' } }, null
     ).catch((error) => log.warn('no return message from cache', error));
     const cacheAll = cacheResponse && cacheResponse.action === ACTION.CACHE_GOT &&
         cacheResponse.payload
@@ -99,7 +97,7 @@ const ensureFolderHierarchy = async (folderPath) => {
         if (!parentNode[nodeName]) {
           await messenger(
             { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
-            null, 1, TIME_UNIT.SECOND
+            null, 5, TIME_UNIT.SECOND
           ).catch((error) => log.warn('no return message from cache', error));
         }
         break;

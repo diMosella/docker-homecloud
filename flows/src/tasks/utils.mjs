@@ -101,23 +101,42 @@ const deriveInfo = async (context, next) => {
   const tags = [];
   let category = FILE_CATEGORY.MEDIA;
   let source = SOURCE.getProperty(SOURCE.EXT, 'label');
-  if (camera === CAMERA.NEX_5T && make === SOURCE.SONY &&
-        folder === SOURCE.SONY && sonyReg.test(name)) {
-    tags.push(SOURCE.getProperty(make, 'label'));
-    source = SOURCE.getProperty(make, 'label');
-  } else if ((folder === SOURCE.ABIGAIL_SCAN || folder === SOURCE.WIM_SCAN ||
-        folder === SOURCE.DIMOSELLA_SCAN) && scanReg.test(name)) {
-    tags.push(SOURCE.getProperty(folder, 'label'));
-    tags.push('Scan');
-    category = FILE_CATEGORY.DOCS;
-    source = `${SOURCE.getProperty(folder, 'label')}-Scan`;
-  } else if (camera === CAMERA.IPHONE_SE && (folder === SOURCE.ABIGAIL ||
-        folder === SOURCE.WIM) && iPhoneReg.test(name)) {
-    tags.push(SOURCE.getProperty(folder, 'label'));
-    const cameraLabel = CAMERA.getProperty(camera, 'label').replace(/\s/, '');
-    tags.push(cameraLabel);
-    source = `${SOURCE.getProperty(folder, 'label')}-${cameraLabel}`;
-  } else {
+  switch (folder) {
+    case SOURCE.SONY:
+      if (camera === CAMERA.NEX_5T && sonyReg.test(name)) {
+        tags.push(SOURCE.getProperty(make, 'label'));
+        source = SOURCE.getProperty(make, 'label');
+      }
+      break;
+    case SOURCE.ABIGAIL_SCAN:
+    case SOURCE.DIMOSELLA_SCAN:
+    case SOURCE.WIM_SCAN:
+      if (scanReg.test(name)) {
+        tags.push(SOURCE.getProperty(folder, 'label'));
+        tags.push('Scan');
+        category = FILE_CATEGORY.DOCS;
+        source = `${SOURCE.getProperty(folder, 'label')}-Scan`;
+      }
+      break;
+    case SOURCE.ABIGAIL:
+    case SOURCE.WIM:
+      if (camera === CAMERA.IPHONE_SE && iPhoneReg.test(name)) {
+        tags.push(SOURCE.getProperty(folder, 'label'));
+        const cameraLabel = CAMERA.getProperty(camera, 'label').replace(/\s/, '');
+        tags.push(cameraLabel);
+        source = `${SOURCE.getProperty(folder, 'label')}-${cameraLabel}`;
+      }
+      break;
+    case SOURCE.OPVANG:
+    case SOURCE.SCHOOL:
+    case SOURCE.E_MAIL:
+      tags.push(SOURCE.getProperty(folder, 'label'));
+      source = `${SOURCE.getProperty(folder, 'label')}`;
+      break;
+    default:
+      break;
+  }
+  if (tags.length === 0) {
     tags.push(SOURCE.getProperty('EXT', 'label'));
   }
 

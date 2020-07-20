@@ -5,7 +5,7 @@ import { ChildProcess } from 'child_process';
 import sleeper from './sleeper.mjs';
 import { TIME_UNIT } from './constants.mjs';
 
-const TIMEOUT = 0.1;
+const TIMEOUT = 0.2;
 
 const messenger = (processRef) => {
   let _reject = null;

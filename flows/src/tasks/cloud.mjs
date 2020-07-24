@@ -52,7 +52,7 @@ const existsExternal = async (nodePath) => {
           null, 5, TIME_UNIT.SECOND
         ).catch((error) => log.warn('no return message from cache', error));
         if (!nowInCache || nowInCache.action !== ACTION.CACHE_HEARD ||
-            nowInCache.payload === null) {
+            nowInCache.payload !== true) {
           return Promise.resolve(false);
         }
       }

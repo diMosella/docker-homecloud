@@ -86,6 +86,7 @@ export default class {
         this.#_isProcessing = false;
         break;
       case ACTION.CACHE_GET:
+      case ACTION.CACHE_LISTEN:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
         if (foundCandidate) {
           const response = await messenger({ action, payload}, foundCandidate.worker)

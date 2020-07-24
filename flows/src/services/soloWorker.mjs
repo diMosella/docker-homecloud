@@ -38,7 +38,7 @@ const outbox = (message) => {
   process.send(message);
 };
 
-const inbox = (message) => {
+const inbox = async (message) => {
   const { action, payload } = message;
   switch (action) {
     case ACTION.PING:
@@ -62,6 +62,15 @@ const inbox = (message) => {
         outbox({
           action: ACTION.CACHE_GOT,
           payload: payload.nodePath === '/' ? cache.all : cache.getByPath(payload.nodePath)
+        });
+      }
+      break;
+    case ACTION.CACHE_LISTEN:
+      if (payload && typeof payload.nodePath === 'string') {
+        const value = await cache.listen(payload.nodePath);
+        outbox({
+          action: ACTION.CACHE_HEARD,
+          payload: value === true
         });
       }
       break;

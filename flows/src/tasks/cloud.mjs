@@ -123,10 +123,26 @@ const getFolderDetails = async (context, next) => {
   await client.checkConnectivity();
   const pathParts = location.split('/').filter((part) => part !== '');
   const nodeName = pathParts.pop();
-  const parentDetails = await client.getFolderFileDetails(`/${pathParts.join('/')}`);
+  const parentDetails = await client.getFolderFileDetails(`/${pathParts.join('/')}`)
+    .catch((error) => {
+      log.debug('failed to retreive details of parent folder', error);
+      return Promise.resolve(error);
+    });
+
+  if (parentDetails instanceof Error) {
+    return Promise.resolve();
+  };
   const nodeDetails = parentDetails.find((item) => item.name === nodeName);
   context.flow.folder.lastModified = new Date(nodeDetails.lastModified).valueOf();
-  context.flow.folder.details = await client.getFolderFileDetails(location);
+  context.flow.folder.details = await client.getFolderFileDetails(location)
+    .catch((error) => {
+      log.debug('failed to retreive details of folder', error);
+      return Promise.resolve(error);
+    });
+
+  if (parentDetails instanceof Error) {
+    return Promise.resolve();
+  };
   await next();
 };
 

@@ -7,7 +7,6 @@ ENV LANG=C.UTF-8
 RUN apk add --update --no-cache \
   python3 \
   py3-img2pdf \
-  pixman \
   jbig2enc
 
 # Builds
@@ -57,22 +56,22 @@ FROM base
 # install file, exiftool, imagemagick, ffmpeg and set timezone
 # each RUN creates a seperate layer
 RUN apk add --update --no-cache \
-    exiftool \
-    rawtherapee \
-    imagemagick \
-    ffmpeg \
-    ghostscript \
-    libxslt \
-    pngquant \
-    qpdf \
-    tesseract-ocr \
-    unpaper \
-    tzdata \
-    sed &&\
-    cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime &&\
-    echo "Europe/Amsterdam" > /etc/timezone &&\
-    apk del tzdata &&\
-    rm -rf /var/cache/apk/*
+  exiftool \
+  rawtherapee \
+  imagemagick \
+  ffmpeg \
+  ghostscript \
+  libxslt \
+  pngquant \
+  qpdf \
+  tesseract-ocr \
+  unpaper \
+  tzdata \
+  sed &&\
+  cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime &&\
+  echo "Europe/Amsterdam" > /etc/timezone &&\
+  apk del tzdata &&\
+  rm -rf /var/cache/apk/*
 # add OCR build
 WORKDIR /home/flows/app
 COPY --from=pythonBuild /usr/lib/python3.8/site-packages/ /usr/lib/python3.8/site-packages/

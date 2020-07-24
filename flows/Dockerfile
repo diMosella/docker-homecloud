@@ -7,6 +7,7 @@ ENV LANG=C.UTF-8
 RUN apk add --update --no-cache \
   python3 \
   py3-img2pdf \
+  pixman \
   jbig2enc
 
 # Builds
@@ -77,7 +78,6 @@ WORKDIR /home/flows/app
 COPY --from=pythonBuild /usr/lib/python3.8/site-packages/ /usr/lib/python3.8/site-packages/
 COPY --from=pythonBuild /usr/bin/ocrmypdf /usr/bin/ocrmypdf
 COPY ./src/assets/*.traineddata /usr/share/tessdata/
-COPY scan.pdf .
 # add FLOWS build
 WORKDIR /home/flows
 COPY --from=nodeBuild /home/flows/dist/ ./dist/

@@ -72,16 +72,14 @@ RUN apk add --update --no-cache \
   echo "Europe/Amsterdam" > /etc/timezone &&\
   apk del tzdata &&\
   rm -rf /var/cache/apk/*
+WORKDIR /home/flows
 # add OCR build
-WORKDIR /home/flows/app
 COPY --from=pythonBuild /usr/lib/python3.8/site-packages/ /usr/lib/python3.8/site-packages/
 COPY --from=pythonBuild /usr/bin/ocrmypdf /usr/bin/ocrmypdf
 COPY ./src/assets/*.traineddata /usr/share/tessdata/
 # add FLOWS build
-WORKDIR /home/flows
 COPY --from=nodeBuild /home/flows/dist/ ./dist/
 COPY ./test/healthCheck.mjs ./test/
-COPY ./src/assets/ /usr/share/tesseract-ocr/4.00/tessdata/
 
 HEALTHCHECK --interval=5m --timeout=3s CMD [ "node", "./test/healthCheck.mjs" ] || exit 1
 

@@ -57,6 +57,8 @@ services:
     stdin_open: true
     tty: true
     restart: always
+    expose:
+      - '8000'
     depends_on:
       - nginx
       - app

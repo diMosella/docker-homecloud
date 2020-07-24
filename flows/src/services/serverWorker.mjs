@@ -40,8 +40,8 @@ const start = () => {
   const triggerRouter = new Router();
   const healthRouter = new Router();
   const port = 8000;
-  // const host = '192.168.50.219';
-  const host = 'localhost';
+  // FIXME: test if this works in Docker
+  const host = isProd ? '::' : 'localhost';
   const __dirname = path.resolve();
   const docroot = path.join(__dirname, `./${isProd ? 'dist' : 'src'}/public`);
 

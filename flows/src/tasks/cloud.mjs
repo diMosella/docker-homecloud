@@ -130,7 +130,7 @@ const getFolderDetails = async (context, next) => {
     });
 
   if (parentDetails instanceof Error) {
-    return Promise.resolve();
+    return Promise.resolve(parentDetails);
   };
   const nodeDetails = parentDetails.find((item) => item.name === nodeName);
   context.flow.folder.lastModified = new Date(nodeDetails.lastModified).valueOf();
@@ -140,8 +140,8 @@ const getFolderDetails = async (context, next) => {
       return Promise.resolve(error);
     });
 
-  if (parentDetails instanceof Error) {
-    return Promise.resolve();
+  if (context.flow.folder.details instanceof Error) {
+    return Promise.resolve(context.flow.folder.details);
   };
   await next();
 };

@@ -57,10 +57,15 @@ services:
     stdin_open: true
     tty: true
     restart: always
+    depends_on:
+      - nginx
+      - app
     env_file:
       - flw.env
     networks:
       - cloud
+    volumes:
+      - flows_data:/home/flows/temp
     #shm_size:
     #  - '2gb'
   backup:
@@ -123,6 +128,12 @@ volumes:
       type: none
       o: bind
       device: /media/clouddata/bitwarden
+  flows_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/clouddata/flows
   backup_data:
     driver: local
     driver_opts:

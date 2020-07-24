@@ -17,5 +17,4 @@ export const notify = async (ctx, next) => {
     });
   }
   ctx.body = { success: isValid };
-  await next();
 };

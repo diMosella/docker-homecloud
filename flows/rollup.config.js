@@ -5,6 +5,7 @@ import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import copy from 'rollup-plugin-copy';
 
 export default [
   {
@@ -20,6 +21,11 @@ export default [
         './src/services/serverWorkerProcess.mjs': './dist/serverWorker.mjs',
         './src/services/converterWorkerProcess.mjs': './dist/converterWorker.mjs',
         delimiters: ['', '']
+      }),
+      copy({
+        targets: [
+          { src: './src/public/*', dest: './dist/public' }
+        ]
       }),
       json(), resolve({ preferBuiltins: true }), commonjs()]
   },

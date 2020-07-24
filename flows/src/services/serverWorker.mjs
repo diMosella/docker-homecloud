@@ -4,11 +4,13 @@ import path from 'path';
 import Koa from 'koa';
 import Router from '@koa/router';
 import json from 'koa-json';
-import serve from 'koa-static';
+import send from 'koa-send';
 import Log from './log.mjs';
 import { notify } from '../tasks/trigger.mjs';
 import messenger from '../basics/messenger.mjs';
-import { ACTION } from '../basics/constants.mjs';
+import { ACTION, ENVIRONMENT } from '../basics/constants.mjs';
+
+const isProd = process.env.NODE_ENV === ENVIRONMENT.getProperty(ENVIRONMENT.PRODUCTION, 'label');
 
 const outbox = (message) => {
   process.send(message);
@@ -32,13 +34,16 @@ const start = () => {
   const log = new Log();
 
   const app = new Koa();
+  const staticRoute = async (ctx) => {
+    await send(ctx, ctx.path, { root: docroot });
+  };
   const triggerRouter = new Router();
   const healthRouter = new Router();
   const port = 8000;
   // const host = '192.168.50.219';
   const host = 'localhost';
   const __dirname = path.resolve();
-  const docroot = path.join(__dirname, './src/public');
+  const docroot = path.join(__dirname, `./${isProd ? 'dist' : 'src'}/public`);
 
   triggerRouter.get('/trigger', notify);
   triggerRouter.use(json());
@@ -79,7 +84,7 @@ const start = () => {
   // response
   app.use(triggerRouter.routes());
   app.use(healthRouter.routes());
-  app.use(serve(docroot));
+  app.use(staticRoute);
 
   return app.listen({ port, host }, () => {
     log.info(`Worker server ${processId} at ${Date.now()} - listening on ${host}:${port}.`);

@@ -3,7 +3,7 @@
 import { LOG_LEVEL } from '../basics/constants.mjs';
 
 export default class Log {
-  #_level = LOG_LEVEL.INFO;
+  #_level = LOG_LEVEL.WARN;
 
   constructor (level) {
     if (!Log.instance) {

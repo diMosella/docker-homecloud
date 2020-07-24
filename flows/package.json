@@ -5,7 +5,7 @@
   "main": "src/app.mjs",
   "type": "module",
   "scripts": {
-    "start:dev": "(export $(cat '../flw.env' | xargs) && node ./src/app.mjs)",
+    "start:dev": "(export $(cat '../flw-dev.env' | xargs) && node ./src/app.mjs)",
     "start:prod": "(export $(cat '../flw.env' | xargs) && node ./dist/flows.mjs)",
     "build": "rollup -c",
     "test": "mocha --config ./test/.mocharc.yaml",
@@ -20,7 +20,7 @@
     "@koa/router": "^8.0.8",
     "koa": "^2.12.0",
     "koa-json": "^2.0.2",
-    "koa-static": "^5.0.0",
+    "koa-send": "^5.0.1",
     "nextcloud-link": "^1.2.2",
     "node-cron": "^2.0.3"
   },
@@ -41,6 +41,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "mocha": "^8.0.1",
     "rollup": "^2.21.0",
+    "rollup-plugin-copy": "^3.3.0",
     "sinon": "^9.0.2"
   }
 }

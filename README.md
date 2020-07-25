@@ -73,5 +73,10 @@ Now you can enter Nextcloud and create a new document. It will be opened in ONLY
 
 9. It is possible that there is a mention of trusted domains or HTTP 400 (Bad request)
 
-  - check `sudo docker exec -u www-data -ti cloud-server php occ config:system:get trusted_domains` if domain and nginx-server are listed, otherwise:
-  - `sudo docker exec -u www-data -ti cloud-server php occ config:system:set trusted_domains 2 --value=nginx-server`
+  - check `sudo docker exec -u www-data -ti cloud-server php occ config:system:get trusted_domains` if domain and proxy-server are listed, otherwise:
+  - `sudo docker exec -u www-data -ti cloud-server php occ config:system:set trusted_domains 2 --value=proxy-server`
+
+10. It is also possible that you receive several HTTP 50x reponses
+
+  - check `sudo docker exec -u www-data cloud-server ls -al /var/www` if there are folder which don't list www-data:root as permissions, do:
+  - `sudo docker exec cloud-server chown -R www-data:root /var/www`

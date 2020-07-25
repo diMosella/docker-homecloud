@@ -47,7 +47,11 @@ cd docker-homecloud
 
 2.11 Set `CLOUD_TEMP` in `flw.env`
 
-3. Build the containers
+2.12 Set `NODE_ENV` in `flw.env`
+
+2.13 Set `LOG_LEVEL` in `flw.env`
+
+3. Build the containers (WARNING: this step deprecated, it is included in docker-compose)
 
 3.1 Run ``build.sh`` from ``backup``
 

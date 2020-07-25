@@ -53,6 +53,9 @@ services:
   flows:
     container_name: flows-services
     hostname: flows-services
+    build:
+      context: ./flows
+      dockerfile: Dockerfile
     image: dimosella/flows:latest
     stdin_open: true
     tty: true
@@ -73,6 +76,9 @@ services:
   backup:
     container_name: backup-services
     hostname: backup-services
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
     image: dimosella/backup:latest
     restart: always
     env_file:

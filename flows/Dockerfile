@@ -15,8 +15,8 @@ FROM base AS nodeBuild
 WORKDIR /home/flows
 COPY ./package*.json ./
 # create a new layer, for caching
-RUN npm install
-# RUN npm ci --only=production
+# RUN npm install
+RUN npm ci --only=production
 COPY ./src/ ./src/
 COPY ./rollup.config.js ./
 RUN npm run build

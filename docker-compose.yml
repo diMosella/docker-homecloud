@@ -58,9 +58,9 @@ services:
     tty: true
     restart: always
     expose:
+      - '443'
       - '8000'
     depends_on:
-      - nginx
       - app
     env_file:
       - flw.env
@@ -100,6 +100,7 @@ services:
       - 443:443
     links:
       - app
+      - flows
     networks:
       - cloud
     volumes:

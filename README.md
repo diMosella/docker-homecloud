@@ -80,3 +80,11 @@ Now you can enter Nextcloud and create a new document. It will be opened in ONLY
 
   - check `sudo docker exec -u www-data cloud-server ls -al /var/www` if there are folder which don't list www-data:root as permissions, do:
   - `sudo docker exec cloud-server chown -R www-data:root /var/www`
+
+11. To remove Docker containers:
+
+  - `sudo docker rm $(sudo docker ps -q)`
+
+12. To remove Docker images:
+
+  - `sudo docker rmi $(sudo docker images -q)`

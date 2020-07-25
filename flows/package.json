@@ -18,17 +18,18 @@
   "license": "MIT",
   "dependencies": {
     "@koa/router": "^8.0.8",
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "@rollup/plugin-replace": "^2.3.3",
     "koa": "^2.12.0",
     "koa-json": "^2.0.2",
     "koa-send": "^5.0.1",
     "nextcloud-link": "^1.2.2",
     "node-cron": "^2.0.3",
-    "@rollup/plugin-commonjs": "^14.0.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^8.4.0",
-    "@rollup/plugin-replace": "^2.3.3",
     "rollup": "^2.21.0",
-    "rollup-plugin-copy": "^3.3.0"
+    "rollup-plugin-copy": "^3.3.0",
+    "supports-color": "^7.1.0"
   },
   "devDependencies": {
     "c8": "^7.2.0",

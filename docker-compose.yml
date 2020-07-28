@@ -39,6 +39,7 @@ services:
       - cloud_data:/var/www/html/data
       - ./cloud/fonts:/usr/share/fonts/truetype
       - ./cloud/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./cloud/crontab:/var/spool/cron/crontabs/www-data
   bitwarden:
     container_name: secure-server
     hostname: secure-server

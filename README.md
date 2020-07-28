@@ -97,30 +97,7 @@ Now you can enter Nextcloud and create a new document. It will be opened in ONLY
 
   - `sudo docker exec -ti -u www-data -e crontab`
   - `*/5 * * * * php -f /var/www/nextcloud/occ documentserver:flush; php -f /var/www/nextcloud/cron.php > /dev/null 2>&1`
- 
- or (for no connection NC 19):
-  - in `config.php`:
-  ```
-    'onlyoffice' =>
-      array (
-        'verify_peer_off' => true,
-      ),
-  ```
 
-or (for no connection NC 19):
-  - in `config.php`:
-  ```
-    'allow_local_remote_servers' => true,
-  ```
-14. To fix pm limits (see https://docs.nextcloud.com/server/stable/admin_manual/installation/server_tuning.html?highlight=max_children):
-
-  - put in `/usr/local/etc/php-fpm.d/www.conf`:
-  ```
-    pm = dynamic
-    pm.max_children = 120
-    pm.start_servers = 12
-    pm.min_spare_servers = 6
-    pm.max_spare_servers = 18
-  ```
-  - remark: for regular `php.ini` stuff, use `php-local.ini`; for `php-fpm.conf` use `www.conf`
-
+14. Fix for no connection NC 19 to OnlyOffice:
+  - `sudo docker exec -u www-data cloud-server php occ config:system:set onlyoffice verify_peer_off --value=true --type=boolean` (self-signed certs)
+  - `sudo docker exec -u www-data cloud-server php occ config:system:set allow_local_remote_servers --value=true --type=boolean`

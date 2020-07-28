@@ -34,7 +34,8 @@ services:
     volumes:
       - app_root:/var/www/html
       - cloud_data:/var/www/html/data
-      - ./fonts:/usr/share/fonts/truetype
+      - ./cloud/fonts:/usr/share/fonts/truetype
+      - ./cloud/www.conf:/usr/local/etc/php-fpm.d/www.conf
   bitwarden:
     container_name: secure-server
     hostname: secure-server

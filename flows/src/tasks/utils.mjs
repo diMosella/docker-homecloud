@@ -111,10 +111,10 @@ const deriveInfo = async (context, next) => {
     case SOURCE.ABIGAIL_SCAN:
     case SOURCE.DIMOSELLA_SCAN:
     case SOURCE.WIM_SCAN:
+      tags.push('Scan');
+      category = FILE_CATEGORY.DOCS;
       if (scanReg.test(name)) {
         tags.push(SOURCE.getProperty(folder, 'label'));
-        tags.push('Scan');
-        category = FILE_CATEGORY.DOCS;
         source = `${SOURCE.getProperty(folder, 'label')}-Scan`;
       }
       break;

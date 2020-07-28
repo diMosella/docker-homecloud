@@ -9,4 +9,4 @@ COPY supervisord.conf /
 
 ENV NEXTCLOUD_UPDATE=1
 
-CMD ["chown", "www-data:root", "/var/spool/cron/crontabs/www-data", "&&", "/usr/bin/supervisord", "-c", "/supervisord.conf"]
+CMD "chown www-data:root /var/spool/cron/crontabs/www-data && /usr/bin/supervisord -c /supervisord.conf"]

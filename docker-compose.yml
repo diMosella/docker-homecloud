@@ -14,7 +14,10 @@ services:
   app:
     container_name: cloud-server
     hostname: cloud-server
-    image: nextcloud:19-fpm-alpine
+    build:
+      context: ./cloud
+      dockerfile: Dockerfile
+    image: dimosella/cloud:latest
     stdin_open: true
     tty: true
     restart: always

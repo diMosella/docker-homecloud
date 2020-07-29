@@ -14,10 +14,7 @@ services:
   app:
     container_name: cloud-server
     hostname: cloud-server
-    build:
-      context: ./cloud
-      dockerfile: Dockerfile
-    image: dimosella/cloud:latest
+    image: nextcloud:19-fpm
     stdin_open: true
     tty: true
     restart: always
@@ -39,7 +36,6 @@ services:
       - cloud_data:/var/www/html/data
       - ./cloud/fonts:/usr/share/fonts/truetype
       - ./cloud/www.conf:/usr/local/etc/php-fpm.d/www.conf
-      - ./cloud/crontab:/var/spool/cron/crontabs/www-data
   bitwarden:
     container_name: secure-server
     hostname: secure-server

@@ -7,7 +7,7 @@ import { SOURCE, FILE_CATEGORY } from './constants.mjs';
  */
 export const watch = [
   {
-    frequency: '*/2 7-21 * * *',
+    frequency: '*/5 7-21 * * *',
     locations: [
       SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.OPVANG, SOURCE.SCHOOL,
       SOURCE.E_MAIL, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN

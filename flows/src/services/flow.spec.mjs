@@ -3,7 +3,6 @@
 import chai from 'chai';
 import Flow from './flow.mjs';
 
-
 const assert = chai.assert;
 
 describe('(Service) flow', () => {

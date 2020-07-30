@@ -89,9 +89,12 @@ export default class {
       case ACTION.CACHE_LISTEN:
         foundCandidate = this.#_workers.find((candidate) => candidate.type === WORKER_TYPE.SOLO);
         if (foundCandidate) {
-          const response = await messenger({ action, payload}, foundCandidate.worker)
-            .catch((error) => log.warn('no return message from cache', error));
-          if (response) {
+          const response = await messenger({ action, payload}, foundCandidate.worker, 5, TIME_UNIT.SECOND)
+            .catch((error) => {
+              log.warn('no return message from cache while listening', error);
+              return Promise.resolve(error);
+            });
+          if (response && !(response instanceof Error)) {
             const { action, payload } = response;
             foundCandidate = this.#_workers.find((candidate) => candidate.id === processId);
             foundCandidate.worker.send({ action, payload });

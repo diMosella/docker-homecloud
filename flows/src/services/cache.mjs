@@ -107,7 +107,7 @@ export default class Cache {
    */
   listen (path, waitTime = TIMEOUT, timeUnit = TIME_UNIT.SECOND) {
     if (typeof path !== 'string') {
-      throw new TypeError('A path must be a string!');
+      return Promise.reject(new TypeError('A path must be a string!'));
     }
 
     const sanePath = `/${path.split('/').filter((part) => part !== '').join('/')}`;

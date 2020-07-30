@@ -42,7 +42,7 @@ describe('(Service) cache', () => {
     });
     it('public method listen', async () => {
       assert.typeOf(testCache.listen, 'function');
-      assert.throws(testCache.listen, TypeError);
+      await assert.throwsAsync(testCache.listen, TypeError);
       const setValue = () => {
         testCache.set('/arbitrairy/path/1/another', true);
         return Promise.resolve('value is set');

@@ -147,7 +147,7 @@ const deriveInfo = async (context, next) => {
   const month = (dates[0].getMonth() + 1).toString().padStart(2, '0');
   const date = dates[0].getDate().toString().padStart(2, '0');
 
-  tags.push(year, MONTH.getProperty(dates[0].getMonth(), 'value').toLowerCase());
+  tags.push(`${year}`, MONTH.getProperty(dates[0].getMonth(), 'value').toLowerCase());
 
   const tagsOrg = [...tags, 'org'];
   const tagsEdit = [...tags, 'edit'];
@@ -156,11 +156,12 @@ const deriveInfo = async (context, next) => {
       exif.FileTypeExtension;
 
   const datePath = `${year}/${year}-${month}/${year}-${month}-${date}`;
+  const nameRef = name.slice(0, name.lastIndexOf('.')).slice(-2);
   context.flow.file.derived = {
-    nameOrg: `${simpleFormatDate(dates[0])}-${source}-org.${exif.FileTypeExtension}`,
+    nameOrg: `${simpleFormatDate(dates[0])}-${nameRef}-${source}-org.${exif.FileTypeExtension}`,
     pathOrg: `${basePaths[FILE_CATEGORY.getProperty(category, 'value')].org}/${datePath}`,
     tagsOrg,
-    nameEdit: `${simpleFormatDate(dates[0])}-${source}-edit.${editExtension}`,
+    nameEdit: `${simpleFormatDate(dates[0])}-${nameRef}-${source}-edit.${editExtension}`,
     pathEdit: `${basePaths[FILE_CATEGORY.getProperty(category, 'value')].edit}/${datePath}`,
     tagsEdit,
     editExtension

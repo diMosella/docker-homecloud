@@ -49,8 +49,8 @@ const existsExternal = async (nodePath) => {
       if (!inCache.payload) {
         const nowInCache = await messenger(
           { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
-          null, 5, TIME_UNIT.SECOND
-        ).catch((error) => log.warn('no return message from cache', error));
+          null, 6, TIME_UNIT.SECOND
+        ).catch((error) => log.warn('no return message from cache while listening', error));
         if (!nowInCache || nowInCache.action !== ACTION.CACHE_HEARD ||
             nowInCache.payload !== true) {
           return Promise.resolve(false);
@@ -102,23 +102,13 @@ const ensureFolderHierarchy = async (folderPath) => {
       }
       case 'boolean':
         if (!parentNode[nodeName]) {
-          const listenResponse = await messenger(
+          await messenger(
             { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
-            null, 5, TIME_UNIT.SECOND
+            null, 6, TIME_UNIT.SECOND
           ).catch((error) => {
-            log.warn('no return message from cache', error);
+            log.warn('no return message from cache while listening', error);
             return Promise.resolve(error);
           });
-          if (listenResponse instanceof Error) {
-            const touchResponse = await client.touchFolder(nodePath)
-              .catch((error) => {
-                log.warn('error while re-touching cloud folder', error);
-                return Promise.resolve(error);
-              });
-            if (!(touchResponse instanceof Error)) {
-              process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: true } });
-            }
-          }
         }
         break;
       default:

@@ -27,6 +27,7 @@ describe('(Task) utils', () => {
         },
         file: {
           details: {
+            name: 'test.jpeg',
             lastModified: '20200301T12:23:45'
           },
           exif: {

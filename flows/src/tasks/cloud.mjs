@@ -88,17 +88,37 @@ const ensureFolderHierarchy = async (folderPath) => {
       ? '/'
       : ''}${precedingParts.join('/')}/${nodeName}`;
     switch (typeof parentNode[nodeName]) {
-      case 'undefined':
+      case 'undefined': {
         process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: false } });
-        await client.touchFolder(nodePath);
-        process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: true } });
+        const touchResponse = await client.touchFolder(nodePath)
+          .catch((error) => {
+            log.warn('error while touching cloud folder', error);
+            return Promise.resolve(error);
+          });
+        if (!(touchResponse instanceof Error)) {
+          process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: true } });
+        }
         break;
+      }
       case 'boolean':
         if (!parentNode[nodeName]) {
-          await messenger(
+          const listenResponse = await messenger(
             { action: ACTION.CACHE_LISTEN, payload: { nodePath } },
             null, 5, TIME_UNIT.SECOND
-          ).catch((error) => log.warn('no return message from cache', error));
+          ).catch((error) => {
+            log.warn('no return message from cache', error);
+            return Promise.resolve(error);
+          });
+          if (listenResponse instanceof Error) {
+            const touchResponse = await client.touchFolder(nodePath)
+              .catch((error) => {
+                log.warn('error while re-touching cloud folder', error);
+                return Promise.resolve(error);
+              });
+            if (!(touchResponse instanceof Error)) {
+              process.send({ action: ACTION.CACHE_SET, payload: { nodePath, value: true } });
+            }
+          }
         }
         break;
       default:
@@ -311,8 +331,8 @@ const addTags = async (context, next) => {
   const fileOrg = path.resolve(`${pathOrg}/${nameOrg}`);
   const fileEdit = path.resolve(`${pathEdit}/${nameEdit}`);
 
-  await _addTags(fileOrg, tagsOrg);
-  await _addTags(fileEdit, tagsEdit);
+  await _addTags(fileOrg, tagsOrg, existingTags);
+  await _addTags(fileEdit, tagsEdit, existingTags);
 
   await next();
 };

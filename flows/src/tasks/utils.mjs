@@ -116,6 +116,8 @@ const deriveInfo = async (context, next) => {
       if (scanReg.test(name)) {
         tags.push(SOURCE.getProperty(folder, 'label'));
         source = `${SOURCE.getProperty(folder, 'label')}-Scan`;
+      } else {
+        source += '-Scan';
       }
       break;
     case SOURCE.ABIGAIL:

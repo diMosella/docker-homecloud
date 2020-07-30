@@ -7,7 +7,7 @@ import { SOURCE, FILE_CATEGORY } from './constants.mjs';
  */
 export const watch = [
   {
-    frequency: '*/5 7-21 * * *',
+    frequency: '*/6 7-21 * * *',
     locations: [
       SOURCE.SONY, SOURCE.ABIGAIL, SOURCE.WIM, SOURCE.DIMOSELLA, SOURCE.OPVANG, SOURCE.SCHOOL,
       SOURCE.E_MAIL, SOURCE.ABIGAIL_SCAN, SOURCE.WIM_SCAN, SOURCE.DIMOSELLA_SCAN
@@ -25,8 +25,8 @@ export const tempFolder = process.env.CLOUD_TEMP || '/temp';
  */
 export const basePaths = {
   [FILE_CATEGORY.getProperty(FILE_CATEGORY.MEDIA, 'value')]: {
-    org: '/vanMoosel Fotos/_originelenT',
-    edit: '/vanMoosel Fotos/_edits'
+    org: '/vanMoosel Fotos/_originelen',
+    edit: '/vanMoosel Fotos'
   },
   [FILE_CATEGORY.getProperty(FILE_CATEGORY.DOCS, 'value')]: {
     org: '/vanMoosel Scans/_originelen',

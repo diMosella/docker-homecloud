@@ -103,3 +103,14 @@ Now you can enter Nextcloud and create a new document. It will be opened in ONLY
 14. Fix for no connection NC 19 to OnlyOffice:
   - `sudo docker exec -u www-data cloud-server php occ config:system:set onlyoffice verify_peer_off --value=true --type=boolean` (self-signed certs)
   - `sudo docker exec -u www-data cloud-server php occ config:system:set allow_local_remote_servers --value=true --type=boolean`
+
+15. Create new version:
+  - `git commit ...`
+  - `git tag v2.0.0`
+  - `git push`
+  - `git push --tags`
+  - `npm version from-git`
+  or:
+  - `npm version <new version> | major | minor | patch | premajor | preminor | prepath | prerelease`
+  and:
+  - `import { version } from '../package.json';`, using the `json()` plugin for `rollup.js`

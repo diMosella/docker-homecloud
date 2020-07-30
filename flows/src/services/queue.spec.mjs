@@ -6,7 +6,6 @@ import Queue from './queue.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT, STATE } from '../basics/constants.mjs';
 
-
 const assert = chai.assert;
 
 describe('(Service) queue', () => {

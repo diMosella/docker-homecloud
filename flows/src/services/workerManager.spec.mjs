@@ -7,7 +7,6 @@ import WorkerManager from './workerManager.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { ACTION, TIME_UNIT, WORKER_TYPE } from '../basics/constants.mjs';
 
-
 const assert = chai.assert;
 
 describe('(Service) workerManager', () => {

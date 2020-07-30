@@ -6,7 +6,6 @@ import Sequencer from './sequencer.mjs';
 import sleeper from '../basics/sleeper.mjs';
 import { TIME_UNIT } from '../basics/constants.mjs';
 
-
 const assert = chai.assert;
 
 describe('(Service) sequencer', () => {

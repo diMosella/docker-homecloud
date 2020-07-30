@@ -2,8 +2,8 @@
 
 // import path from 'path';
 import chai from 'chai';
-import sinon from 'sinon';
-import NextcloudClient from 'nextcloud-link';
+// import sinon from 'sinon';
+// import NextcloudClient from 'nextcloud-link';
 
 import cloud from './cloud.mjs';
 

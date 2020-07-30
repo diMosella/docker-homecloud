@@ -4,7 +4,7 @@ import cluster from 'cluster';
 import messenger from '../basics/messenger.mjs';
 import Log from './log.mjs';
 import Sequencer from './sequencer.mjs';
-import { ACTION, WORKER_TYPE } from '../basics/constants.mjs';
+import { ACTION, TIME_UNIT, WORKER_TYPE } from '../basics/constants.mjs';
 
 if (!cluster.isMaster) {
   throw new Error('This workerManager should be run as non-worker process');

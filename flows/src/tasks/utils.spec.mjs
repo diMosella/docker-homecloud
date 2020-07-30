@@ -2,7 +2,7 @@
 
 // import path from 'path';
 import chai from 'chai';
-import sinon from 'sinon';
+// import sinon from 'sinon';
 import utils from './utils.mjs';
 
 const assert = chai.assert;

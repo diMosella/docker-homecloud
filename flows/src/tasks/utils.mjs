@@ -133,7 +133,7 @@ const deriveInfo = async (context, next) => {
     case SOURCE.SCHOOL:
     case SOURCE.E_MAIL:
       tags.push(SOURCE.getProperty(folder, 'label'));
-      tags.push(SOURCE.getProperty(folder, 'value'));
+      tags.push(SOURCE.getProperty(folder, 'value').toLowerCase());
       source = `${SOURCE.getProperty(folder, 'label')}`;
       break;
     default:

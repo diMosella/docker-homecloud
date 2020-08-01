@@ -67,7 +67,8 @@ const inbox = async (message) => {
       break;
     case ACTION.CACHE_LISTEN:
       if (payload && typeof payload.nodePath === 'string') {
-        const value = await cache.listen(payload.nodePath);
+        const value = await cache.listen(payload.nodePath)
+          .catch(error => Promise.resolve(error));
         outbox({
           action: ACTION.CACHE_HEARD,
           payload: value === true

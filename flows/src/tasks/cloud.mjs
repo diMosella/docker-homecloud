@@ -286,16 +286,15 @@ const _addTags = async (path, tags, existingTags) => {
     return Promise.resolve(fileProps);
   }
   for (const tagLabel of tags) {
-    const tagCandidate = existingTags.find(item => item.name === tagLabel) ||
+    const tagCandidate = existingTags.find(item => `${item.name}` === tagLabel) ||
       await cloudTags.createTag(tagLabel);
-    if (tagCandidate instanceof Error) {
-      break;
-    }
-    if (!existingTags.some(item => item.name === tagLabel)) {
-      existingTags.push(tagCandidate);
-    }
-    if (!fileProps.tags || !fileProps.tags.some(tag => tag.id === tagCandidate.id)) {
-      await cloudTags.setTag(fileProps.id, tagCandidate.id);
+    if (!(tagCandidate instanceof Error)) {
+      if (!existingTags.some(item => `${item.name}` === tagLabel)) {
+        existingTags.push(tagCandidate);
+      }
+      if (!fileProps.tags || !fileProps.tags.some(tag => tag.id === tagCandidate.id)) {
+        await cloudTags.setTag(fileProps.id, tagCandidate.id);
+      }
     }
   }
 };

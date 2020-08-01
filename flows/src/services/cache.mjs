@@ -142,7 +142,7 @@ export default class Cache {
           resolve(result);
         }).catch((_error) => {
           tooLate();
-          reject('no response message');
+          reject('no response message (cache)');
         });
     });
   };

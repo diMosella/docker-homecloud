@@ -172,8 +172,20 @@ const createTag = async (tagLabel) => {
     },
     body: serializedProps
   }).catch(error => Promise.resolve(error));
+  if (response instanceof Error) {
+    return Promise.resolve(response);
+  }
   const { header } = response;
   const { statusCode, headers } = header;
+  if (statusCode === 409) { // conflict => already exists
+    const existingTags = await getTags();
+    if (!(existingTags instanceof Error)) {
+      const tagCandidate = existingTags.find(item => `${item.name}` === tagLabel);
+      if (tagCandidate) {
+        return Promise.resolve(tagCandidate);
+      }
+    }
+  }
   if (statusCode >= 400) {
     return Promise.resolve(new Error(header));
   }

@@ -73,7 +73,7 @@ export default (message, processRef = null, waitTime = TIMEOUT, timeUnit = TIME_
         resolve(v0);
       } else {
         tooLate();
-        reject(new Error('no response message'));
+        reject(new Error('no response message (messenger)'));
       }
     });
   });

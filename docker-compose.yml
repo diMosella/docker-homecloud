@@ -3,7 +3,7 @@ services:
   database:
     container_name: database-server
     hostname: database-server
-    image: mariadb
+    image: mariadb:latest
     restart: always
     volumes:
       - database_data:/var/lib/mysql
@@ -14,7 +14,10 @@ services:
   app:
     container_name: cloud-server
     hostname: cloud-server
-    image: nextcloud:18-fpm
+    build:
+      context: ./cloud
+      dockerfile: Dockerfile
+    image: dimosella/cloud:latest
     stdin_open: true
     tty: true
     restart: always
@@ -22,8 +25,6 @@ services:
       - '443'
       - '9000'
     depends_on:
-      - database
-    links:
       - database
     environment:
       - MYSQL_HOST=database
@@ -34,7 +35,8 @@ services:
     volumes:
       - app_root:/var/www/html
       - cloud_data:/var/www/html/data
-      - ./fonts:/usr/share/fonts/truetype
+      - ./cloud/fonts:/usr/share/fonts/truetype
+      - ./cloud/www.conf:/usr/local/etc/php-fpm.d/www.conf
   bitwarden:
     container_name: secure-server
     hostname: secure-server
@@ -50,9 +52,35 @@ services:
       - cloud
     volumes:
       - secure_data:/data/
+  flows:
+    container_name: flows-services
+    hostname: flows-services
+    build:
+      context: ./flows
+      dockerfile: Dockerfile
+    image: dimosella/flows:latest
+    stdin_open: true
+    tty: true
+    restart: always
+    expose:
+      - '443'
+      - '8000'
+    depends_on:
+      - app
+    env_file:
+      - flw.env
+    networks:
+      - cloud
+    volumes:
+      - flows_data:/home/flows/temp
+    #shm_size:
+    #  - '2gb'
   backup:
     container_name: backup-services
     hostname: backup-services
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
     image: dimosella/backup:latest
     restart: always
     env_file:
@@ -68,21 +96,26 @@ services:
       - ./backup/scripts:/scripts
       - ./backup/crontab:/etc/crontabs/root
       - ../ssh:/root/.ssh:ro
-  nginx:
-    container_name: nginx-server
-    image: nginx
+  proxy:
+    container_name: proxy-server
+    hostname: proxy-server
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    image: dimosella/proxy:latest
     stdin_open: true
     tty: true
     restart: always
     ports:
       - 80:80
       - 443:443
-    links:
+    depends_on:
       - app
+      - flows
     networks:
       - cloud
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
       - /etc/letsencrypt/:/etc/nginx/etc/ssl
       - ../ssl/dhparam.pem:/etc/ssl/dhparam.pem
       - ../ssl/.htpasswd:/etc/ssl/.htpasswd
@@ -109,16 +142,16 @@ volumes:
       type: none
       o: bind
       device: /media/clouddata/bitwarden
+  flows_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /media/clouddata/flows
   backup_data:
     driver: local
     driver_opts:
       type: none
       o: bind
       device: /media/clouddata/backup
-#  docker_socket:
-#    driver: local
-#    driver_opts:
-#      type: none
-#      o: bind
-#      device: /var/run/docker.sock
   app_root:

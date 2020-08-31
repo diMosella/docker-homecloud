@@ -1,0 +1,7 @@
+# --- Mocha config
+
+# require: []
+file:
+  - ./test/setup.mjs
+spec:
+  - ./src/**/*.spec.mjs

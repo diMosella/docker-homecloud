@@ -1,7 +1,7 @@
 ## Nextcloud and BitWarden Docker installation
 
 Nextcloud and Bitwarden Docker installation will install Nextcloud and Bitwarden_rs to your server running them in Docker containers.
-Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then OnlyOffice launched a new repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud](https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud)
+Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then NextCloud and OnlyOffice provided a better integration / installation via Apps.
 Now, the instructions (like adding fonts) are from [Nextcloud DocumentServer app](https://github.com/nextcloud/documentserver_community).
 For instruction on Restic (for backup) see [Restic documentation](https://restic.readthedocs.io/en/latest/index.html)
 
@@ -39,11 +39,25 @@ cd docker-homecloud
 
 2.7 Set `TOKEN` in `bu.env`
 
-3. Build the backup container
+2.8 Set `CLOUD_USER` in `flw.env`
+
+2.9 Set `CLOUD_PWD` in `flw.env`
+
+2.10 Set `CLOUD_URL` in `flw.env`
+
+2.11 Set `CLOUD_TEMP` in `flw.env`
+
+2.12 Set `NODE_ENV` in `flw.env`
+
+2.13 Set `LOG_LEVEL` in `flw.env`
+
+3. Build the containers (WARNING: this step deprecated, it is included in docker-compose)
 
 3.1 Run ``build.sh`` from ``backup``
 
-3. Run Docker Compose:
+3.2 Run ``build.sh`` from ``flows``
+
+4. Run Docker Compose:
 
 ```
 docker-compose up -d
@@ -52,22 +66,51 @@ docker-compose up -d
 
 **Please note**: you might need to wait a couple of minutes when all the containers are up and running after the above command.
 
-4. Now launch the browser and enter the webserver address. The NextCloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
+7. Now launch the browser and enter the webserver address. The NextCloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
+
+8. Install the necessary apps in NextCloud:
+
+  - Community Document Server
+  - ONLYOFFICE
 
 Now you can enter Nextcloud and create a new document. It will be opened in ONLYOFFICE Document Server.
 
-## Project Information
+**WARNING**: using image fpm-alpine will result in a failure, due to missing dependencies and wrong linking!
 
-Official website: [http://www.onlyoffice.org](http://onlyoffice.org "http://www.onlyoffice.org")
+9. It is possible that there is a mention of trusted domains or HTTP 400 (Bad request)
 
-Code repository: [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud "https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud")
+  - check `sudo docker exec -u www-data -ti cloud-server php occ config:system:get trusted_domains` if domain and proxy-server are listed, otherwise:
+  - `sudo docker exec -u www-data -ti cloud-server php occ config:system:set trusted_domains 2 --value=proxy-server`
 
-SaaS version: [http://www.onlyoffice.com](http://www.onlyoffice.com "http://www.onlyoffice.com")
+10. It is also possible that you receive several HTTP 50x reponses
 
-## User Feedback and Support
+  - check `sudo docker exec -u www-data cloud-server ls -al /var/www` if there are folder which don't list www-data:root as permissions, do:
+  - `sudo docker exec cloud-server chown -R www-data:root /var/www`
 
-If you have any problems with or questions about [ONLYOFFICE Document Server][2], please visit our official forum to find answers to your questions: [dev.onlyoffice.org][1] or you can ask and answer ONLYOFFICE development questions on [Stack Overflow][3].
+11. To remove Docker containers:
 
-  [1]: http://dev.onlyoffice.org
-  [2]: https://github.com/ONLYOFFICE/DocumentServer
-  [3]: http://stackoverflow.com/questions/tagged/onlyoffice
+  - `sudo docker rm $(sudo docker ps -q)`
+
+12. To remove Docker images:
+
+  - `sudo docker rmi $(sudo docker images -q)`
+
+13. To fix OnlyOffice not saving changes in NextCloud:
+
+  - `sudo docker exec -ti -u www-data -e crontab`
+  - `*/5 * * * * php -f /var/www/nextcloud/occ documentserver:flush; php -f /var/www/nextcloud/cron.php > /dev/null 2>&1`
+
+14. Fix for no connection NC 19 to OnlyOffice:
+  - `sudo docker exec -u www-data cloud-server php occ config:system:set onlyoffice verify_peer_off --value=true --type=boolean` (self-signed certs)
+  - `sudo docker exec -u www-data cloud-server php occ config:system:set allow_local_remote_servers --value=true --type=boolean`
+
+15. Create new version:
+  - `git commit ...`
+  - `git tag v2.0.0`
+  - `git push`
+  - `git push --tags`
+  - `npm version from-git`
+  or:
+  - `npm version <new version> | major | minor | patch | premajor | preminor | prepath | prerelease`
+  and:
+  - `import { version } from '../package.json';`, using the `json()` plugin for `rollup.js`

@@ -1,4 +1,4 @@
-FROM nextcloud:19-fpm
+FROM nextcloud:20-fpm
 
 COPY ./flush.php /var/www/html/flush.php
 

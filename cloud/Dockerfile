@@ -1,7 +1,5 @@
-FROM nextcloud:20-fpm
-
-COPY ./flush.php /var/www/html/flush.php
+FROM nextcloud:20-fpm-alpine
 
 ENV NEXTCLOUD_UPDATE=1
 
-CMD chown www-data:root /var/www/html/flush.php && php-fpm
+CMD php-fpm

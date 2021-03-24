@@ -1,8 +1,10 @@
 ## Nextcloud and BitWarden Docker installation
 
-Nextcloud and Bitwarden Docker installation will install Nextcloud and Bitwarden_rs to your server running them in Docker containers.
+Nextcloud and Bitwarden Docker installation will install Nextcloud, Restic and Bitwarden_rs to your server running them in Docker containers.
+
 Initially forked from [https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud](https://github.com/ONLYOFFICE/docker-onlyoffice-owncloud), since then NextCloud and OnlyOffice provided a better integration / installation via Apps.
 Now, the instructions (like adding fonts) are from [Nextcloud DocumentServer app](https://github.com/nextcloud/documentserver_community).
+
 For instruction on Restic (for backup) see [Restic documentation](https://restic.readthedocs.io/en/latest/index.html)
 
 ## Requirements
@@ -68,7 +70,7 @@ docker-compose up -d
 
 7. Now launch the browser and enter the webserver address. The NextCloud wizard webpage will be opened. Enter all the necessary data to complete the wizard.
 
-8. Install the necessary apps in NextCloud:
+8. Install the necessary apps in NextCloud (WARNING: due to severe bugs in saving edited files this is no longer recommended):
 
   - Community Document Server
   - ONLYOFFICE

@@ -41,7 +41,7 @@ services:
   bitwarden:
     container_name: secure-server
     hostname: secure-server
-    image: bitwardenrs/server:alpine
+    image: vaultwarden/server:alpine
     stdin_open: true
     tty: true
     restart: always

@@ -5,7 +5,7 @@ services:
     hostname: database-server
     image: mariadb:latest
     restart: always
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-read-only-compressed=OFF
     volumes:
       - database_data:/var/lib/mysql
     env_file:

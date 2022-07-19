@@ -3,7 +3,7 @@ services:
   database:
     container_name: database-server
     hostname: database-server
-    image: mariadb:latest
+    image: mariadb:10.8.2
     restart: always
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-read-only-compressed=OFF
     volumes:

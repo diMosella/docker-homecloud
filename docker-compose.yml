@@ -53,27 +53,27 @@ services:
       - cloud
     volumes:
       - secure_data:/data/
-  flows:
-    container_name: flows-services
-    hostname: flows-services
-    build:
-      context: ./flows
-      dockerfile: Dockerfile
-    image: dimosella/flows:latest
-    stdin_open: true
-    tty: true
-    restart: always
-    expose:
-      - '443'
-      - '8000'
-    depends_on:
-      - app
-    env_file:
-      - flw.env
-    networks:
-      - cloud
-    volumes:
-      - flows_data:/home/flows/temp
+  # flows:
+  #   container_name: flows-services
+  #   hostname: flows-services
+  #   build:
+  #     context: ./flows
+  #     dockerfile: Dockerfile
+  #   image: dimosella/flows:latest
+  #   stdin_open: true
+  #   tty: true
+  #   restart: always
+  #   expose:
+  #     - '443'
+  #     - '8000'
+  #   depends_on:
+  #     - app
+  #   env_file:
+  #     - flw.env
+  #   networks:
+  #     - cloud
+  #   volumes:
+  #     - flows_data:/home/flows/temp
     #shm_size:
     #  - '2gb'
   backup:
@@ -112,7 +112,7 @@ services:
       - 443:443
     depends_on:
       - app
-      - flows
+      # - flows
     networks:
       - cloud
     volumes:
@@ -143,12 +143,12 @@ volumes:
       type: none
       o: bind
       device: /media/clouddata/bitwarden
-  flows_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /media/clouddata/flows
+  # flows_data:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: /media/clouddata/flows
   backup_data:
     driver: local
     driver_opts:

@@ -1,4 +1,4 @@
-FROM nextcloud:25-fpm-alpine
+FROM nextcloud:26-fpm-alpine
 
 ENV NEXTCLOUD_UPDATE=1
 

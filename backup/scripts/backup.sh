@@ -39,7 +39,7 @@ SetMaintenance $ON
 sqlite3 $SOURCE_SECURE_FOLDER/db.sqlite3 ".backup '$TARGET_SECURE_FILE'"
 
 # 4. dump cloud database
-mariadb-dump --single-transaction -h $SOURCE_CLOUD_DATABASE -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE > $TARGET_CLOUD_FILE
+mariadb-dump --skip_ssl --single-transaction -h $SOURCE_CLOUD_DATABASE -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE > $TARGET_CLOUD_FILE
 
 # 5. check backup repo
 restic snapshots

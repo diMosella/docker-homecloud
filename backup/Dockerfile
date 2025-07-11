@@ -4,7 +4,7 @@ FROM restic/restic:latest
 # each RUN creates a seperate layer
 RUN apk add --update --no-cache \
     sqlite \
-    mysql-client \
+    mariadb-client \
     tzdata \
     sed &&\
     cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime &&\ 

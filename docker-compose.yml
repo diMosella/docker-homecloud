@@ -88,9 +88,11 @@ services:
     restart: always
     #privileged: true
     cap_add:
+      - NET_RAW
       - NET_ADMIN
       - NET_BROADCAST
       - NET_BIND_SERVICE
+      - SYS_ADMIN
     expose:
       - '8090'
     networks:

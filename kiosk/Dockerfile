@@ -2,13 +2,11 @@ FROM debian:stable-slim
 
 # install sed, avahi-tools, libgcc; set timezone
 # each RUN creates a separate layer
-RUN apt update && DEBIAN_FRONTEND="noninteractive" TZ="Europe/Amsterdam" apt install -y --no-install-recommends \
+RUN apt update && TZ="Europe/Amsterdam" apt install -y \
     tzdata \
-    avahi-utils \
-    sed && \
-    sed -i 's/.*enable-dbus=.*/enable-dbus=no/' /etc/avahi/avahi-daemon.conf
+    avahi-utils
 
-CMD avahi-daemon --daemonize --no-drop-root && /opt/kiosk/server
+CMD /opt/kiosk/server
 
 # command that wrappes incoming commands, clearing kiosk default
 ENTRYPOINT []

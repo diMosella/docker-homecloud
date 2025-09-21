@@ -92,6 +92,8 @@ services:
       - cloud
     volumes:
       - ./kiosk/software:/opt/kiosk
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
   backup:
     container_name: backup-services
     hostname: backup-services

@@ -76,6 +76,22 @@ services:
   #     - flows_data:/home/flows/temp
     #shm_size:
     #  - '2gb'
+  kiosk:
+    container_name: kiosk
+    hostname: kiosk
+    build:
+      context: ./kiosk
+      dockerfile: Dockerfile
+    image: dimosella/kiosk:latest
+    stdin_open: true
+    tty: true
+    restart: always
+    expose:
+      - '8090'
+    networks:
+      - cloud
+    volumes:
+      - ./kiosk/software:/opt/kiosk
   backup:
     container_name: backup-services
     hostname: backup-services

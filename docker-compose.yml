@@ -86,6 +86,10 @@ services:
     stdin_open: true
     tty: true
     restart: always
+    # privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_BROADCAST
     expose:
       - '8090'
     networks:

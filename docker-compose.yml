@@ -1,9 +1,9 @@
-version: '3.3'
+version: "3.3"
 services:
   database:
     container_name: database-server
     hostname: database-server
-    image: mariadb:10.11
+    image: mariadb:11.8
     restart: always
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-read-only-compressed=OFF
     volumes:
@@ -23,8 +23,8 @@ services:
     tty: true
     restart: always
     expose:
-      - '443'
-      - '9000'
+      - "443"
+      - "9000"
     depends_on:
       - database
     environment:
@@ -46,7 +46,7 @@ services:
     tty: true
     restart: always
     expose:
-      - '443'
+      - "443"
     env_file:
       - bw.env
     networks:
@@ -74,8 +74,8 @@ services:
   #     - cloud
   #   volumes:
   #     - flows_data:/home/flows/temp
-    #shm_size:
-    #  - '2gb'
+  #shm_size:
+  #  - '2gb'
   kiosk:
     container_name: kiosk
     hostname: kiosk
@@ -95,7 +95,7 @@ services:
     #  - NET_BIND_SERVICE
     #  - SYS_ADMIN
     expose:
-      - '8090'
+      - "8090"
     networks:
       - cloud
     volumes:
@@ -149,7 +149,7 @@ services:
       - app_root:/var/www/html
 networks:
   cloud:
-    driver: 'bridge'
+    driver: "bridge"
 volumes:
   database_data:
     driver: local

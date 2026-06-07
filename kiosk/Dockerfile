@@ -7,7 +7,7 @@ RUN apt update && TZ="Europe/Amsterdam" apt install -y \
     #tzdata \
     #avahi-utils
 
-CMD /opt/kiosk/server
+CMD cd /opt/kiosk/data && ../software/server
 
 # command that wrappes incoming commands, clearing kiosk default
 ENTRYPOINT []
